@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useId } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { MapPin, Clock, Loader2 } from "lucide-react";
 import { MapContainer, TileLayer, Marker } from 'react-leaflet';
@@ -22,7 +22,6 @@ const customIcon = new Icon({
 export function LocationDisplay({ latitude, longitude, createdAt }: LocationDisplayProps) {
     const [address, setAddress] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(true);
-    const mapId = useId();
     const gmapsUrl = `https://www.google.com/maps/search/?api=1&query=${latitude},${longitude}`;
     const position: LatLngExpression = [latitude, longitude];
 
@@ -51,7 +50,7 @@ export function LocationDisplay({ latitude, longitude, createdAt }: LocationDisp
     return (
         <div className="w-full space-y-3">
             <div className="h-40 w-full rounded-md overflow-hidden border">
-                 <MapContainer id={mapId} center={position} zoom={13} scrollWheelZoom={false} style={{ height: '100%', width: '100%' }} attributionControl={false} zoomControl={false}>
+                 <MapContainer center={position} zoom={13} scrollWheelZoom={false} style={{ height: '100%', width: '100%' }} attributionControl={false} zoomControl={false}>
                     <TileLayer
                         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                     />
