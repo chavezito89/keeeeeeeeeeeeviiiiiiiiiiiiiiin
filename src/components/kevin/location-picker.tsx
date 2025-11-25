@@ -30,8 +30,8 @@ export function LocationPicker() {
         const latInput = document.querySelector('input[name="latitude"]') as HTMLInputElement;
         const lonInput = document.querySelector('input[name="longitude"]') as HTMLInputElement;
         if (latInput && lonInput) {
-            latInput.value = lat?.toString() || '0';
-            lonInput.value = lng?.toString() || '0';
+            latInput.value = lat?.toString() || '';
+            lonInput.value = lng?.toString() || '';
         }
         if (lat && lng) {
             setSelectedCoords(`${lat.toFixed(4)}, ${lng.toFixed(4)}`);
@@ -137,7 +137,7 @@ export function LocationPicker() {
             <Label className="flex items-center gap-2"><MapPin className="h-4 w-4"/> Ubicación del avistamiento</Label>
             <p className="text-sm text-muted-foreground">Haz clic en el mapa para marcar el punto exacto.</p>
             <div className="relative">
-                <div ref={containerRef} className="h-64 w-full rounded-md overflow-hidden border bg-muted" />
+                <div ref={containerRef} className="h-64 w-full rounded-md overflow-hidden border bg-muted" tabIndex={-1} />
                 <Button 
                     type="button" 
                     variant="secondary" 

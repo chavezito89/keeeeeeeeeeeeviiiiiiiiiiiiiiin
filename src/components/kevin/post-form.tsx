@@ -11,7 +11,12 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Loader2, Image as ImageIcon, MessageSquare } from 'lucide-react';
-import { LocationPicker } from './location-picker';
+import dynamic from 'next/dynamic';
+
+const LocationPicker = dynamic(() => import('./location-picker').then(mod => mod.LocationPicker), {
+  ssr: false,
+  loading: () => <div className="h-64 w-full rounded-md bg-muted flex items-center justify-center"><Loader2 className="h-5 w-5 animate-spin" /></div>
+});
 
 
 function SubmitButton() {
@@ -106,8 +111,8 @@ export function PostForm() {
 
                     <LocationPicker />
 
-                    <input type="hidden" name="latitude" defaultValue="0" />
-                    <input type="hidden" name="longitude" defaultValue="0" />
+                    <input type="hidden" name="latitude" />
+                    <input type="hidden" name="longitude" />
                 </CardContent>
                 <CardFooter>
                     <SubmitButton />
