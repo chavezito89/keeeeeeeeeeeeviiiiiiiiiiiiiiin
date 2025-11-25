@@ -3,6 +3,9 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { MapPin, Clock, Loader2 } from "lucide-react";
+import { es } from 'date-fns/locale';
+import { formatDistanceToNow } from 'date-fns';
+
 
 interface LocationDisplayProps {
     latitude: number;
@@ -23,18 +26,18 @@ export function LocationDisplay({ latitude, longitude, createdAt, onLocationDeta
                 const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&accept-language=es`);
                 const data = await response.json();
                 if (data) {
-                    setAddress(data.display_name || "Location details not found.");
+                    setAddress(data.display_name || "Detalles de la ubicación no encontrados.");
                     onLocationDetails({
                         city: data.address?.city || data.address?.town || data.address?.village || '',
                         country: data.address?.country || '',
                         countryCode: data.address?.country_code || '',
                     });
                 } else {
-                    setAddress("Location details not found.");
+                    setAddress("Detalles de la ubicación no encontrados.");
                 }
             } catch (error) {
                 console.error("Error fetching address:", error);
-                setAddress("Could not retrieve location name.");
+                setAddress("No se pudo recuperar el nombre de la ubicación.");
             } finally {
                 setIsLoading(false);
             }
@@ -43,6 +46,8 @@ export function LocationDisplay({ latitude, longitude, createdAt, onLocationDeta
         fetchAddress();
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [latitude, longitude]);
+    
+    const formattedDate = formatDistanceToNow(new Date(createdAt), { addSuffix: true, locale: es });
 
     return (
         <div className="w-full space-y-3">
@@ -53,7 +58,7 @@ export function LocationDisplay({ latitude, longitude, createdAt, onLocationDeta
                         {isLoading ? (
                              <div className="flex items-center gap-2">
                                 <Loader2 className="w-4 h-4 animate-spin"/>
-                                <span className="text-sm text-muted-foreground">Fetching location...</span>
+                                <span className="text-sm text-muted-foreground">Buscando ubicación...</span>
                              </div>
                         ) : (
                             <span className="text-sm font-medium text-foreground group-hover/link:text-primary transition-colors truncate" title={address || ""}>
@@ -61,13 +66,13 @@ export function LocationDisplay({ latitude, longitude, createdAt, onLocationDeta
                             </span>
                         )}
                         <span className="text-xs text-muted-foreground group-hover/link:text-primary transition-colors">
-                            View on Google Maps
+                            Ver en Google Maps
                         </span>
                     </div>
                 </Link>
                 <div className="flex items-center gap-2 flex-shrink-0 self-end sm:self-center">
                     <Clock className="w-4 h-4 text-muted-foreground" />
-                    <span className="text-sm text-muted-foreground">{createdAt}</span>
+                    <span className="text-sm text-muted-foreground">{formattedDate}</span>
                 </div>
             </div>
         </div>

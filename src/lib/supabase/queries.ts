@@ -1,5 +1,4 @@
 import type { KevinPost } from "@/lib/types";
-import { formatDistanceToNow } from 'date-fns';
 import { supabase, supabaseServer } from "./client";
 
 export async function getPosts(): Promise<KevinPost[]> {
@@ -20,7 +19,7 @@ export async function getPosts(): Promise<KevinPost[]> {
     comment: post.comment,
     latitude: post.latitude,
     longitude: post.longitude,
-    createdAt: `${formatDistanceToNow(new Date(post.created_at))} ago`,
+    createdAt: post.created_at, // Pass raw date string
   }));
 }
 

@@ -5,10 +5,10 @@ import { z } from "zod";
 import { addPost, uploadPostImage } from "@/lib/supabase/queries";
 
 const postSchema = z.object({
-    comment: z.string().max(500, "Comment is too long.").optional(),
+    comment: z.string().max(500, "El comentario es demasiado largo.").optional(),
     latitude: z.coerce.number(),
     longitude: z.coerce.number(),
-    image: z.instanceof(File).refine(file => file.size > 0, "Image is required."),
+    image: z.instanceof(File).refine(file => file.size > 0, "Se requiere una imagen."),
 });
 
 export async function createPost(formData: FormData) {
@@ -36,13 +36,13 @@ export async function createPost(formData: FormData) {
         });
 
         revalidatePath("/feed");
-        return { success: true, message: "New sighting logged!" };
+        return { success: true, message: "¡Nuevo avistamiento registrado!" };
 
     } catch (error) {
-        const message = error instanceof Error ? error.message : "An unknown error occurred.";
+        const message = error instanceof Error ? error.message : "Ocurrió un error desconocido.";
         return {
             success: false,
-            message: `Failed to log sighting: ${message}`
+            message: `No se pudo registrar el avistamiento: ${message}`
         }
     }
 }

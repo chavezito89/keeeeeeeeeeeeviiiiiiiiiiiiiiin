@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Camera } from "lucide-react";
+import Image from "next/image";
 import { APP_NAME } from "@/lib/constants";
 import { Button } from "@/components/ui/button";
 
@@ -8,7 +8,7 @@ export function AppHeader() {
     <header className="sticky top-0 z-40 w-full border-b bg-background/80 backdrop-blur-sm">
       <div className="container mx-auto flex h-16 items-center justify-between p-4 sm:p-6 lg:p-8">
         <Link href="/" className="flex items-center gap-2 font-bold text-lg">
-          <Camera className="h-6 w-6 text-primary" />
+          <Image src="https://storage.googleapis.com/deplat-staging-images/wheres-kevin-logo.png" alt="Logo" width={40} height={40} />
           <span>{APP_NAME}</span>
         </Link>
         <div className="flex items-center gap-2">
@@ -16,7 +16,7 @@ export function AppHeader() {
                 <Link href="/feed">Feed</Link>
             </Button>
             <Button variant="outline" asChild>
-                <Link href="/kevin/dashboard">Kevin's Panel</Link>
+                <Link href="/kevin/dashboard">Panel de Kevin</Link>
             </Button>
         </div>
       </div>

@@ -27,7 +27,7 @@ export function FeedClient({ posts }: FeedClientProps) {
   if (!username) {
     return (
       <div className="flex items-center justify-center h-screen">
-        <p>Loading...</p>
+        <p>Cargando...</p>
       </div>
     );
   }
@@ -40,7 +40,7 @@ export function FeedClient({ posts }: FeedClientProps) {
         transition={{ duration: 0.5 }}
         className="text-3xl md:text-4xl font-bold tracking-tight font-headline mb-8"
       >
-        Welcome, <span className="text-primary">{username}</span>!
+        ¡Bienvenido, <span className="text-primary">{username}</span>!
       </motion.h1>
       <FeedGrid posts={posts} />
     </div>

@@ -29,7 +29,7 @@ export function FeedGrid({ posts }: FeedGridProps) {
   };
 
   if (posts.length === 0) {
-    return <p className="text-center text-muted-foreground">No sightings of Kevin yet. Be the first to spot him!</p>;
+    return <p className="text-center text-muted-foreground">Aún no hay avistamientos de Kevin. ¡Sé el primero en encontrarlo!</p>;
   }
 
   return (

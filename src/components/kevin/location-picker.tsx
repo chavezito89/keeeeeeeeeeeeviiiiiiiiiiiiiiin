@@ -60,8 +60,8 @@ export function LocationPicker({ location, onLocationChange }: LocationPickerPro
                 setIsGettingLocation(false);
                 toast({
                     variant: "destructive",
-                    title: "Location Error",
-                    description: "Could not get location. Please enable location services in your browser.",
+                    title: "Error de ubicación",
+                    description: "No se pudo obtener la ubicación. Por favor, activa los servicios de ubicación en tu navegador.",
                 });
             },
             {
@@ -81,7 +81,7 @@ export function LocationPicker({ location, onLocationChange }: LocationPickerPro
 
     return (
         <div className="space-y-2">
-            <Label className="flex items-center gap-2"><MapPin className="h-4 w-4"/> Location</Label>
+            <Label className="flex items-center gap-2"><MapPin className="h-4 w-4"/> Ubicación</Label>
             <div className="h-64 w-full rounded-md overflow-hidden border">
                 <MapContainer center={mapCenter} zoom={mapZoom} scrollWheelZoom={false} style={{ height: '100%', width: '100%' }}>
                     <ChangeView center={mapCenter} zoom={mapZoom} />
@@ -100,12 +100,12 @@ export function LocationPicker({ location, onLocationChange }: LocationPickerPro
                 disabled={isGettingLocation}
                 className="w-full"
             >
-                {isGettingLocation && <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Getting Location...</>}
-                {!isGettingLocation && "Use My Current Location"}
+                {isGettingLocation && <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Obteniendo ubicación...</>}
+                {!isGettingLocation && "Usar mi ubicación actual"}
             </Button>
             {location && (
                 <p className="text-sm text-muted-foreground text-center">
-                    Selected: {location.lat.toFixed(4)}, {location.lon.toFixed(4)}
+                    Seleccionado: {location.lat.toFixed(4)}, {location.lon.toFixed(4)}
                 </p>
             )}
         </div>

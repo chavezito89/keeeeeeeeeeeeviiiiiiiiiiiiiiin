@@ -1,12 +1,13 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowRight, User, Loader2, Camera, Eye } from "lucide-react";
+import { ArrowRight, User, Loader2, Eye } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,7 +16,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { KEVIN_USERNAME_KEY, APP_NAME } from "@/lib/constants";
 
 const usernameSchema = z.object({
-  username: z.string().min(3, "Username must be at least 3 characters").max(20, "Username must be at most 20 characters"),
+  username: z.string().min(3, "El nombre de usuario debe tener al menos 3 caracteres").max(20, "El nombre de usuario debe tener máximo 20 caracteres"),
 });
 
 export function RoleSelector() {
@@ -55,9 +56,9 @@ export function RoleSelector() {
 
   return (
     <div className="text-center">
-        <Camera className="mx-auto h-12 w-12 text-primary mb-4" />
+        <Image src="https://storage.googleapis.com/deplat-staging-images/wheres-kevin-logo.png" alt="Logo de ¿Dónde está Kevin?" width={150} height={150} className="mx-auto mb-4" />
         <h1 className="text-4xl font-bold tracking-tight font-headline">{APP_NAME}</h1>
-        <p className="text-muted-foreground mt-2 mb-8">Where is he now? Join the search.</p>
+        <p className="text-muted-foreground mt-2 mb-8">¿Pero dónde se metió? Únete a la búsqueda.</p>
       
       <AnimatePresence mode="wait">
         {!selection && (
@@ -71,14 +72,14 @@ export function RoleSelector() {
           >
             <Card className="cursor-pointer hover:shadow-lg hover:-translate-y-1 transition-transform duration-300" onClick={handleNotKevinSelection}>
                 <CardHeader>
-                    <CardTitle className="flex items-center justify-center gap-2 text-2xl"><Eye /> Not Kevin</CardTitle>
-                    <CardDescription>Join the hunt and see where Kevin has been.</CardDescription>
+                    <CardTitle className="flex items-center justify-center gap-2 text-2xl"><Eye /> No soy Kevin</CardTitle>
+                    <CardDescription>Únete a la caza y mira dónde ha estado Kevin.</CardDescription>
                 </CardHeader>
             </Card>
             <Card className="cursor-pointer bg-primary text-primary-foreground hover:shadow-lg hover:-translate-y-1 transition-transform duration-300" onClick={handleKevinSelection}>
                 <CardHeader>
-                    <CardTitle className="flex items-center justify-center gap-2 text-2xl"><User /> I am Kevin</CardTitle>
-                    <CardDescription className="text-primary-foreground/80">Log your adventures for everyone to see.</CardDescription>
+                    <CardTitle className="flex items-center justify-center gap-2 text-2xl"><User /> Soy Kevin</CardTitle>
+                    <CardDescription className="text-primary-foreground/80">Registra tus aventuras para que todos las vean.</CardDescription>
                 </CardHeader>
             </Card>
           </motion.div>
@@ -94,8 +95,8 @@ export function RoleSelector() {
             >
                 <Card>
                     <CardHeader>
-                        <CardTitle>Create a Username</CardTitle>
-                        <CardDescription>Choose a name to join the community of Kevin spotters.</CardDescription>
+                        <CardTitle>Crea un Nombre de Usuario</CardTitle>
+                        <CardDescription>Elige un nombre para unirte a la comunidad de buscadores de Kevin.</CardDescription>
                     </CardHeader>
                     <CardContent>
                         <Form {...form}>
@@ -105,11 +106,11 @@ export function RoleSelector() {
                                     name="username"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>Username</FormLabel>
+                                            <FormLabel>Nombre de usuario</FormLabel>
                                             <FormControl>
                                                 <div className="relative">
                                                     <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                                                    <Input placeholder="e.g., SuperSpotter" {...field} className="pl-10" />
+                                                    <Input placeholder="ej. SuperBuscador" {...field} className="pl-10" />
                                                 </div>
                                             </FormControl>
                                             <FormMessage />
@@ -120,11 +121,11 @@ export function RoleSelector() {
                                     {isLoading ? (
                                         <>
                                             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                            Joining...
+                                            Uniéndome...
                                         </>
                                     ) : (
                                         <>
-                                            Start Spotting <ArrowRight className="ml-2 h-4 w-4" />
+                                            Comenzar a Buscar <ArrowRight className="ml-2 h-4 w-4" />
                                         </>
                                     )}
                                 </Button>
