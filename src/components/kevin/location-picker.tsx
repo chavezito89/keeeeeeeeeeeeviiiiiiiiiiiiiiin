@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, memo } from 'react';
 import { MapContainer, TileLayer, Marker, useMapEvents, useMap } from 'react-leaflet';
 import { LatLngExpression, Icon } from 'leaflet';
 import { Button } from '@/components/ui/button';
@@ -38,6 +38,30 @@ function ChangeView({ center, zoom }: { center: LatLngExpression, zoom: number }
     }, [map, center, zoom]);
     return null;
 }
+
+const MemoizedMarker = memo(function MemoizedMarker({ position }: { position: LatLngExpression }) {
+    return <Marker position={position} icon={customIcon}></Marker>;
+});
+
+
+const MapContent = memo(({ location, onLocationChange, setMapCenter, setMapZoom, mapCenter, mapZoom }: any) => {
+    const position = location ? [location.lat, location.lon] as LatLngExpression : null;
+    return (
+        <MapContainer center={mapCenter} zoom={mapZoom} scrollWheelZoom={false} style={{ height: '100%', width: '100%' }}>
+            <ChangeView center={mapCenter} zoom={mapZoom} />
+            <TileLayer
+                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            />
+            {position && <MemoizedMarker position={position} />}
+            <MapEvents onLocationChange={(newLoc) => {
+                onLocationChange(newLoc);
+                setMapCenter([newLoc.lat, newLoc.lon]);
+            }} />
+        </MapContainer>
+    );
+});
+MapContent.displayName = 'MapContent';
 
 export function LocationPicker({ location, onLocationChange }: LocationPickerProps) {
     const { toast } = useToast();
@@ -79,31 +103,18 @@ export function LocationPicker({ location, onLocationChange }: LocationPickerPro
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
-    const position = location ? [location.lat, location.lon] as LatLngExpression : null;
-
-    const displayMap = useMemo(() => {
-        return (
-            <MapContainer center={mapCenter} zoom={mapZoom} scrollWheelZoom={false} style={{ height: '100%', width: '100%' }}>
-                <ChangeView center={mapCenter} zoom={mapZoom} />
-                <TileLayer
-                    attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                />
-                {position && <Marker position={position} icon={customIcon}></Marker>}
-                <MapEvents onLocationChange={(newLoc) => {
-                    onLocationChange(newLoc);
-                    setMapCenter([newLoc.lat, newLoc.lon]);
-                }} />
-            </MapContainer>
-        )
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [mapCenter, mapZoom, position]);
-
     return (
         <div className="space-y-2">
             <Label className="flex items-center gap-2"><MapPin className="h-4 w-4"/> Ubicación</Label>
             <div className="h-64 w-full rounded-md overflow-hidden border">
-                {displayMap}
+                <MapContent
+                    location={location}
+                    onLocationChange={onLocationChange}
+                    mapCenter={mapCenter}
+                    mapZoom={mapZoom}
+                    setMapCenter={setMapCenter}
+                    setMapZoom={setMapZoom}
+                />
             </div>
             <Button
                 type="button"
