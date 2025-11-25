@@ -1,4 +1,4 @@
-import type { KevinPost } from "@/lib/types";
+import type { KevinPost, KevinComment } from "@/lib/types";
 import { supabase, supabaseServer } from "./client";
 
 export async function getPosts(): Promise<KevinPost[]> {
@@ -61,4 +61,32 @@ export async function uploadPostImage(file: File) {
     const { data } = supabase.storage.from('posts').getPublicUrl(filePath);
 
     return data.publicUrl;
+}
+
+export async function getComments(postId: string): Promise<KevinComment[]> {
+  const { data, error } = await supabase
+    .from('post_comments')
+    .select('*')
+    .eq('post_id', postId)
+    .order('created_at', { ascending: true });
+
+  if (error) {
+    console.error("Error fetching comments:", error);
+    return [];
+  }
+  return data;
+}
+
+export async function addComment(commentData: { post_id: string; username: string; comment: string }) {
+    const { data, error } = await supabase
+        .from('post_comments')
+        .insert([commentData])
+        .select();
+
+    if (error) {
+        console.error("Error adding comment:", error);
+        throw new Error("Failed to add comment to the database.");
+    }
+    
+    return data;
 }
