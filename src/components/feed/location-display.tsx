@@ -58,7 +58,7 @@ export function LocationDisplay({ latitude, longitude, createdAt, onLocationDeta
                         {isLoading ? (
                              <div className="flex items-center gap-2">
                                 <Loader2 className="w-4 h-4 animate-spin"/>
-                                <span className="text-sm text-muted-foreground">Buscando ubicación...</span>
+                                <span className="text-sm text-muted-foreground">Buscando...</span>
                              </div>
                         ) : (
                             <span className="text-sm font-medium text-foreground group-hover/link:text-primary transition-colors truncate" title={address || ""}>
