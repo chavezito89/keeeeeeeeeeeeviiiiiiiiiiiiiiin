@@ -5,6 +5,7 @@ import { Suspense } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { KevinPost } from "@/lib/types";
 
+
 async function getPosts(): Promise<KevinPost[]> {
   const { data, error } = await supabaseServer
     .from('posts')

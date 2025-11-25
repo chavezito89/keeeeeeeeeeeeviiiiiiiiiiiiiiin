@@ -4,7 +4,7 @@ import { PostForm } from "@/components/kevin/post-form";
 export default function KevinDashboardPage() {
   return (
     <div className="flex flex-col min-h-screen">
-      <AppHeader />
+      <AppHeader showNavButtons={true} />
       <main className="flex-1">
         <div className="container mx-auto p-4 sm:p-6 lg:p-8">
             <h1 className="text-3xl md:text-4xl font-bold tracking-tight font-headline mb-2">
