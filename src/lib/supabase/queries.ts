@@ -2,7 +2,7 @@ import type { KevinPost, KevinComment } from "@/lib/types";
 import { supabase, supabaseServer } from "./client";
 
 export async function getPosts(): Promise<KevinPost[]> {
-  const { data, error } = await supabase
+  const { data, error } = await supabaseServer
     .from('posts')
     .select('*')
     .order('created_at', { ascending: false });
