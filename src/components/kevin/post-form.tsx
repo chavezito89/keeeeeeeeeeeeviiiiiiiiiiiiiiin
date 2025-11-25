@@ -68,7 +68,7 @@ export function PostForm() {
             });
             formRef.current?.reset();
             setPreviewImage(null);
-            // We need a way to reset the map component's internal state
+            // Dispatch a custom event to reset the map component
             window.dispatchEvent(new Event('resetMap'));
 
         } else if (result?.errors) {

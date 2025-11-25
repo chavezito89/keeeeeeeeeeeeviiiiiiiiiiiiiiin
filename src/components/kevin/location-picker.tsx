@@ -29,7 +29,8 @@ function MapContent({ onLocationChange }: { onLocationChange: (location: { lat: 
     useEffect(() => {
         const handleReset = () => {
              map.setView([20, 0], 2);
-             onLocationChange({ lat: 0, lon: 0 }); // This will clear the marker via state
+             // This will clear the marker via state in the parent component
+             onLocationChange({ lat: 0, lon: 0 }); 
         }
         window.addEventListener('resetMap', handleReset);
         return () => window.removeEventListener('resetMap', handleReset);
@@ -58,15 +59,24 @@ function LocationPickerComponent() {
             setMarkerPosition(null);
             updateHiddenInputs(0,0);
         } else {
-            setMarkerPosition([newLoc.lat, newLoc.lon]);
+            const newPosition: LatLngExpression = [newLoc.lat, newLoc.lon];
+            setMarkerPosition(newPosition);
             updateHiddenInputs(newLoc.lat, newLoc.lon);
             if (map) {
-                map.setView([newLoc.lat, newLoc.lon], map.getZoom());
+                map.setView(newPosition, map.getZoom());
             }
         }
     };
     
     const handleGetLocation = () => {
+        if (!navigator.geolocation) {
+             toast({
+                variant: "destructive",
+                title: "Geolocalización no soportada",
+                description: "Tu navegador no permite obtener la ubicación.",
+            });
+            return;
+        }
         setIsGettingLocation(true);
         navigator.geolocation.getCurrentPosition(
             (position) => {
@@ -74,10 +84,11 @@ function LocationPickerComponent() {
                     lat: position.coords.latitude,
                     lon: position.coords.longitude,
                 };
+                const newPosition: LatLngExpression = [newLocation.lat, newLocation.lon];
                 if (map) {
-                    map.setView([newLocation.lat, newLocation.lon], 13);
+                    map.setView(newPosition, 13);
                 }
-                setMarkerPosition([newLocation.lat, newLocation.lon]);
+                setMarkerPosition(newPosition);
                 updateHiddenInputs(newLocation.lat, newLocation.lon);
                 setIsGettingLocation(false);
             },
@@ -98,18 +109,12 @@ function LocationPickerComponent() {
     };
 
     useEffect(() => {
-        handleGetLocation();
+        // Automatically get location when the component mounts if a map instance is available.
+        if(map){
+            handleGetLocation();
+        }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [map]);
-
-    useEffect(() => {
-        const handleReset = () => {
-            setMarkerPosition(null);
-            updateHiddenInputs(0, 0);
-        };
-        window.addEventListener('resetMap', handleReset);
-        return () => window.removeEventListener('resetMap', handleReset);
-    }, []);
 
     return (
         <div className="space-y-2">
@@ -131,8 +136,9 @@ function LocationPickerComponent() {
                 disabled={isGettingLocation || !map}
                 className="w-full"
             >
-                {isGettingLocation && <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Obteniendo ubicación...</>}
-                {!isGettingLocation && "Usar mi ubicación actual"}
+                {isGettingLocation ? (
+                  <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Obteniendo ubicación...</>
+                ) : "Usar mi ubicación actual"}
             </Button>
             {markerPosition && Array.isArray(markerPosition) && (
                 <p className="text-sm text-muted-foreground text-center">
