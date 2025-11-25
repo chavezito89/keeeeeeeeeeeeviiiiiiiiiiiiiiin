@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { MapPin, Clock, Loader2 } from "lucide-react";
 
 interface LocationDisplayProps {
@@ -17,8 +16,6 @@ export function LocationDisplay({ latitude, longitude, createdAt, onLocationDeta
     const [isLoading, setIsLoading] = useState(true);
     const gmapsUrl = `https://www.google.com/maps/search/?api=1&query=${latitude},${longitude}`;
     
-    const staticMapUrl = `https://render.openstreetmap.org/cgi-bin/export?bbox=${longitude-0.01},${latitude-0.01},${longitude+0.01},${latitude+0.01}&layer=mapnik&marker=${latitude},${longitude}`;
-
     useEffect(() => {
         const fetchAddress = async () => {
             setIsLoading(true);
@@ -49,16 +46,6 @@ export function LocationDisplay({ latitude, longitude, createdAt, onLocationDeta
 
     return (
         <div className="w-full space-y-3">
-            <div className="h-40 w-full rounded-md overflow-hidden border relative">
-                <Image 
-                    src={staticMapUrl} 
-                    alt={`Map of location at ${latitude}, ${longitude}`}
-                    fill
-                    style={{ objectFit: 'cover' }}
-                    unoptimized
-                />
-            </div>
-            
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                  <Link href={gmapsUrl} target="_blank" rel="noopener noreferrer" className="flex items-start gap-2 group/link flex-1 min-w-0">
                     <MapPin className="w-4 h-4 text-primary flex-shrink-0 mt-1" />
