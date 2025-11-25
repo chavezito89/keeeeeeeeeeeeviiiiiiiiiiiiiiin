@@ -70,10 +70,6 @@ export function LocationDisplay({ latitude, longitude, createdAt, onLocationDeta
                         </span>
                     </div>
                 </Link>
-                <div className="flex items-center gap-2 flex-shrink-0 self-end sm:self-center">
-                    <Clock className="w-4 h-4 text-muted-foreground" />
-                    <span className="text-sm text-muted-foreground">{formattedDate}</span>
-                </div>
             </div>
         </div>
     );
