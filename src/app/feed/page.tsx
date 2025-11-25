@@ -1,8 +1,31 @@
-import { getPosts } from "@/lib/supabase/queries";
+import { supabaseServer } from "@/lib/supabase/server";
 import { AppHeader } from "@/components/shared/app-header";
 import { FeedClient } from "@/components/feed/feed-client";
 import { Suspense } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
+import type { KevinPost } from "@/lib/types";
+
+async function getPosts(): Promise<KevinPost[]> {
+  const { data, error } = await supabaseServer
+    .from('posts')
+    .select('*')
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    console.error("Error fetching posts:", error);
+    return [];
+  }
+  
+  return data.map(post => ({
+    id: post.id,
+    imageUrl: post.image_url,
+    imageHint: '',
+    comment: post.comment,
+    latitude: post.latitude,
+    longitude: post.longitude,
+    createdAt: post.created_at,
+  }));
+}
 
 function FeedSkeleton() {
     return (
