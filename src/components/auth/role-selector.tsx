@@ -56,7 +56,7 @@ export function RoleSelector() {
 
   return (
     <div className="text-center">
-        <Image src="https://storage.googleapis.com/deplat-staging-images/wheres-kevin-logo.png" alt="Logo de ¿Dónde está Kevin?" width={150} height={150} className="mx-auto mb-4" />
+        <Image src="https://vxroruoskxkdlnfkkqdv.supabase.co/storage/v1/object/public/LOGO/logo%20cuadrado.png" alt="Logo de ¿Dónde está Kevin?" width={150} height={150} className="mx-auto mb-4" />
         <h1 className="text-4xl font-bold tracking-tight font-headline">{APP_NAME}</h1>
         <p className="text-muted-foreground mt-2 mb-8">¿Pero dónde se metió? Únete a la búsqueda.</p>
       
