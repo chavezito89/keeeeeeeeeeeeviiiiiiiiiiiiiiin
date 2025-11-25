@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import { addPost } from "@/lib/supabase/queries";
+import { addPost, uploadPostImage } from "@/lib/supabase/queries";
 
 const postSchema = z.object({
     comment: z.string().max(500, "Comment is too long.").optional(),
@@ -25,15 +25,11 @@ export async function createPost(formData: FormData) {
         };
     }
     
-    // In a real app, you'd upload the image to Supabase Storage
-    // and save the URL in your database.
-    // For this mock, we'll just log it.
-    
     try {
+        const imageUrl = await uploadPostImage(validatedFields.data.image);
+
         await addPost({
-            // For mock purposes, we'll pass a placeholder URL.
-            // In a real app, this would be the URL from Supabase Storage.
-            imageUrl: URL.createObjectURL(validatedFields.data.image), 
+            image_url: imageUrl,
             comment: validatedFields.data.comment || null,
             latitude: validatedFields.data.latitude,
             longitude: validatedFields.data.longitude,
@@ -43,9 +39,10 @@ export async function createPost(formData: FormData) {
         return { success: true, message: "New sighting logged!" };
 
     } catch (error) {
+        const message = error instanceof Error ? error.message : "An unknown error occurred.";
         return {
             success: false,
-            message: "Failed to log sighting. Please try again."
+            message: `Failed to log sighting: ${message}`
         }
     }
 }

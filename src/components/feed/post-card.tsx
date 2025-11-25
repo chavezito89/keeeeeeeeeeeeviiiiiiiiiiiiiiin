@@ -3,7 +3,6 @@ import Link from "next/link";
 import { MapPin, Clock } from "lucide-react";
 import type { KevinPost } from "@/lib/types";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 
 interface PostCardProps {
   post: KevinPost;
@@ -26,7 +25,7 @@ export function PostCard({ post }: PostCardProps) {
         />
       </CardHeader>
       <CardContent className="p-6 flex-grow">
-        <p className="text-foreground">{comment}</p>
+        {comment && <p className="text-foreground">{comment}</p>}
       </CardContent>
       <CardFooter className="p-6 bg-secondary/50 flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <Link href={gmapsUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 group/link">
