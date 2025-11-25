@@ -8,7 +8,7 @@ export function AppHeader() {
     <header className="sticky top-0 z-40 w-full border-b bg-background/80 backdrop-blur-sm">
       <div className="container mx-auto flex h-16 items-center justify-between p-4 sm:p-6 lg:p-8">
         <Link href="/" className="flex items-center gap-2 font-bold text-lg">
-          <Image src="https://vxroruoskxkdlnfkkqdv.supabase.co/storage/v1/object/public/LOGO/logo%20cuadrado.png" alt="Logo" width={40} height={40} />
+          <Image src="https://vxroruoskxkdlnfkkqdv.supabase.co/storage/v1/object/public/LOGO/logo%20cuadrado.png" alt="Logo" width={50} height={50} />
           <span>{APP_NAME}</span>
         </Link>
         <div className="flex items-center gap-2">
