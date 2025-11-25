@@ -12,6 +12,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Loader2, Image as ImageIcon, MessageSquare } from 'lucide-react';
 import dynamic from 'next/dynamic';
+import imageCompression from 'browser-image-compression';
 
 const LocationPicker = dynamic(() => import('./location-picker').then(mod => mod.LocationPicker), {
   ssr: false,
@@ -37,14 +38,53 @@ function SubmitButton() {
 export function PostForm() {
     const { toast } = useToast();
     const [previewImage, setPreviewImage] = useState<string | null>(null);
+    const [compressedFile, setCompressedFile] = useState<File | null>(null);
     const formRef = useRef<HTMLFormElement>(null);
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
-    const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const handleImageChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
-        if (file) {
-            setPreviewImage(URL.createObjectURL(file));
-        } else {
+        if (!file) {
             setPreviewImage(null);
+            setCompressedFile(null);
+            return;
+        }
+
+        if (file.size > 5 * 1024 * 1024) { // 5MB
+            toast({
+                variant: "destructive",
+                title: "Imagen demasiado grande",
+                description: "Por favor, selecciona una imagen de menos de 5 MB.",
+            });
+            // Clear the file input
+            if(fileInputRef.current) {
+                fileInputRef.current.value = "";
+            }
+            setPreviewImage(null);
+            setCompressedFile(null);
+            return;
+        }
+
+        setPreviewImage(URL.createObjectURL(file));
+
+        const options = {
+            maxSizeMB: 1,
+            maxWidthOrHeight: 1920,
+            useWebWorker: true,
+        };
+
+        try {
+            const compressed = await imageCompression(file, options);
+            setCompressedFile(compressed);
+        } catch (error) {
+            console.error("Error compressing image:", error);
+            toast({
+                variant: "destructive",
+                title: "Error de compresión",
+                description: "No se pudo procesar la imagen. Inténtalo de nuevo.",
+            });
+            setPreviewImage(null);
+            setCompressedFile(null);
         }
     }
 
@@ -52,11 +92,22 @@ export function PostForm() {
         const lat = formData.get('latitude');
         const lon = formData.get('longitude');
 
-        if (!lat || !lon || lat === '0' || lon === '0') {
+        if (!lat || !lon) {
              toast({
                 variant: "destructive",
                 title: "Ubicación requerida",
                 description: "Por favor, selecciona una ubicación en el mapa.",
+            });
+            return;
+        }
+
+        if (compressedFile) {
+            formData.set('image', compressedFile, compressedFile.name);
+        } else {
+             toast({
+                variant: "destructive",
+                title: "Imagen requerida",
+                description: "Por favor, selecciona una imagen.",
             });
             return;
         }
@@ -69,7 +120,10 @@ export function PostForm() {
             });
             formRef.current?.reset();
             setPreviewImage(null);
-            // Dispatch a custom event to reset the map component
+            setCompressedFile(null);
+            if(fileInputRef.current) {
+                fileInputRef.current.value = "";
+            }
             window.dispatchEvent(new Event('resetMap'));
 
         } else if (result?.errors) {
@@ -102,7 +156,7 @@ export function PostForm() {
                                 <Image src={previewImage} alt="Previsualización de imagen" fill style={{objectFit: "cover"}}/>
                             </div>
                         )}
-                        <Input id="image" name="image" type="file" accept="image/*" required onChange={handleImageChange} />
+                        <Input id="image" name="image" type="file" accept="image/*" required onChange={handleImageChange} ref={fileInputRef} />
                     </div>
                      <div className="space-y-2">
                         <Label htmlFor="comment" className="flex items-center gap-2"><MessageSquare className="h-4 w-4"/> Comentario (opcional)</Label>
