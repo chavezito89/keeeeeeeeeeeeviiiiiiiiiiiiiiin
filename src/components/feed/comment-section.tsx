@@ -26,35 +26,27 @@ function SubmitButton() {
     )
 }
 
-export function CommentSection({ postId }: { postId: number }) {
-    const [comments, setComments] = useState<KevinComment[]>([]);
+interface CommentSectionProps {
+    postId: number;
+    initialComments: KevinComment[];
+    onCommentsUpdate: (comments: KevinComment[]) => void;
+}
+
+export function CommentSection({ postId, initialComments, onCommentsUpdate }: CommentSectionProps) {
+    const [comments, setComments] = useState<KevinComment[]>(initialComments);
     const [username, setUsername] = useState<string | null>(null);
-    const [isLoading, setIsLoading] = useState(true);
+    const [isLoading, setIsLoading] = useState(false);
     const formRef = useRef<HTMLFormElement>(null);
     const { toast } = useToast();
 
     useEffect(() => {
         const storedUsername = localStorage.getItem(KEVIN_USERNAME_KEY);
         setUsername(storedUsername);
+    }, []);
 
-        async function fetchComments() {
-            try {
-                setIsLoading(true);
-                const fetchedComments = await getComments(postId);
-                setComments(fetchedComments);
-            } catch (error) {
-                console.error("Error fetching comments:", error);
-                 toast({
-                    variant: "destructive",
-                    title: "Error",
-                    description: "No se pudieron cargar los comentarios.",
-                });
-            } finally {
-                setIsLoading(false);
-            }
-        }
-        fetchComments();
-    }, [postId, toast]);
+    useEffect(() => {
+        setComments(initialComments);
+    }, [initialComments]);
 
     const handleFormAction = async (formData: FormData) => {
         if (!username) {
@@ -67,27 +59,35 @@ export function CommentSection({ postId }: { postId: number }) {
         
         const newCommentText = formData.get('comment') as string;
         
-        // Optimistically add comment
-        const newComment: KevinComment = {
-            id: Math.random(), // temporary id
+        const optimisticComment: KevinComment = {
+            id: Math.random(),
             post_id: postId,
             username: username,
             comment: newCommentText,
             created_at: new Date().toISOString(),
         };
-        setComments(prev => [...prev, newComment]);
+        
+        const newComments = [...comments, optimisticComment];
+        setComments(newComments);
+        onCommentsUpdate(newComments);
         formRef.current?.reset();
         
         const result = await createComment(formData);
 
         if (!result?.success) {
-            // Revert optimistic update
-            setComments(prev => prev.filter(c => c.id !== newComment.id));
+            const revertedComments = comments;
+            setComments(revertedComments);
+            onCommentsUpdate(revertedComments);
              toast({
                 variant: "destructive",
                 title: "Error",
                 description: result?.message || "No se pudo publicar el comentario.",
             });
+        } else {
+            // Re-fetch to get the real comment from db
+            const freshComments = await getComments(postId);
+            setComments(freshComments);
+            onCommentsUpdate(freshComments);
         }
     }
 
