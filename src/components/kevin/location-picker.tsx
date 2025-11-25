@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useRef } from 'react';
 import L, { LatLngExpression, Icon, Map } from 'leaflet';
-import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Loader2, MapPin } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
@@ -62,45 +61,7 @@ export function LocationPicker() {
          }
          updateHiddenInputs(null, null);
     }
-
-    const handleGetLocation = () => {
-        if (!navigator.geolocation) {
-             toast({
-                variant: "destructive",
-                title: "Geolocalización no soportada",
-                description: "Tu navegador no permite obtener la ubicación.",
-            });
-            return;
-        }
-        setIsGettingLocation(true);
-        navigator.geolocation.getCurrentPosition(
-            (position) => {
-                const { latitude, longitude } = position.coords;
-                const newPosition: LatLngExpression = [latitude, longitude];
-                
-                if (mapRef.current) {
-                    mapRef.current.setView(newPosition, 13);
-                     if (markerRef.current) {
-                        markerRef.current.setLatLng(newPosition);
-                    } else {
-                        markerRef.current = L.marker(newPosition, { icon: customIcon }).addTo(mapRef.current);
-                    }
-                }
-                updateHiddenInputs(latitude, longitude);
-                setIsGettingLocation(false);
-            },
-            (error) => {
-                setIsGettingLocation(false);
-                toast({
-                    variant: "destructive",
-                    title: "Error de ubicación",
-                    description: "No se pudo obtener la ubicación. Por favor, activa los servicios de ubicación en tu navegador.",
-                });
-            },
-            { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
-        );
-    };
-
+    
     useEffect(() => {
         if (!containerRef.current || mapRef.current) return;
 
@@ -118,6 +79,44 @@ export function LocationPicker() {
 
         mapRef.current = map;
         
+        const handleGetLocation = () => {
+            if (!navigator.geolocation) {
+                 toast({
+                    variant: "destructive",
+                    title: "Geolocalización no soportada",
+                    description: "Tu navegador no permite obtener la ubicación.",
+                });
+                return;
+            }
+            setIsGettingLocation(true);
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    const { latitude, longitude } = position.coords;
+                    const newPosition: LatLngExpression = [latitude, longitude];
+                    
+                    if (mapRef.current) {
+                        mapRef.current.setView(newPosition, 13);
+                         if (markerRef.current) {
+                            markerRef.current.setLatLng(newPosition);
+                        } else {
+                            markerRef.current = L.marker(newPosition, { icon: customIcon }).addTo(mapRef.current);
+                        }
+                    }
+                    updateHiddenInputs(latitude, longitude);
+                    setIsGettingLocation(false);
+                },
+                (error) => {
+                    setIsGettingLocation(false);
+                    toast({
+                        variant: "destructive",
+                        title: "Error de ubicación",
+                        description: "No se pudo obtener la ubicación. Por favor, activa los servicios de ubicación en tu navegador.",
+                    });
+                },
+                { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+            );
+        };
+
         handleGetLocation(); // Intentar obtener ubicación al inicio
 
         window.addEventListener('resetMap', handleReset);
@@ -132,22 +131,17 @@ export function LocationPicker() {
 
     return (
         <div className="space-y-2">
-            <Label className="flex items-center gap-2"><MapPin className="h-4 w-4"/> Ubicación</Label>
+            <Label className="flex items-center gap-2"><MapPin className="h-4 w-4"/> Ubicación del avistamiento</Label>
+            <p className="text-sm text-muted-foreground">Haz clic en el mapa para marcar el punto exacto.</p>
             <div ref={containerRef} className="h-64 w-full rounded-md overflow-hidden border bg-muted" />
-            <Button
-                type="button"
-                variant="outline"
-                onClick={handleGetLocation}
-                disabled={isGettingLocation}
-                className="w-full"
-            >
-                {isGettingLocation ? (
-                  <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Obteniendo ubicación...</>
-                ) : "Usar mi ubicación actual"}
-            </Button>
-            {selectedCoords && (
+            {isGettingLocation && (
+                <p className="text-sm text-muted-foreground text-center flex items-center justify-center gap-2">
+                    <Loader2 className="h-4 w-4 animate-spin" /> Obteniendo ubicación inicial...
+                </p>
+            )}
+            {selectedCoords && !isGettingLocation && (
                 <p className="text-sm text-muted-foreground text-center">
-                    Seleccionado: {selectedCoords}
+                    Coordenadas seleccionadas: {selectedCoords}
                 </p>
             )}
         </div>
