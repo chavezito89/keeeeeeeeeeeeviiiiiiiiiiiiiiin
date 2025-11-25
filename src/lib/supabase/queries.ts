@@ -1,6 +1,6 @@
 import type { KevinPost } from "@/lib/types";
 import { formatDistanceToNow } from 'date-fns';
-import { supabase } from "./client";
+import { supabase, supabaseServer } from "./client";
 
 export async function getPosts(): Promise<KevinPost[]> {
   const { data, error } = await supabase
@@ -27,7 +27,7 @@ export async function getPosts(): Promise<KevinPost[]> {
 export async function addPost(postData: Omit<KevinPost, 'id' | 'createdAt' | 'imageHint'> & { image_url: string }) {
     const { image_url, comment, latitude, longitude } = postData;
     
-    const { data, error } = await supabase
+    const { data, error } = await supabaseServer
         .from('posts')
         .insert([
             { 
@@ -52,7 +52,7 @@ export async function uploadPostImage(file: File) {
     const fileName = `${Math.random()}.${fileExt}`;
     const filePath = `${fileName}`;
 
-    const { error: uploadError } = await supabase.storage.from('posts').upload(filePath, file);
+    const { error: uploadError } = await supabaseServer.storage.from('posts').upload(filePath, file);
 
     if (uploadError) {
         console.error('Error uploading image:', uploadError);
