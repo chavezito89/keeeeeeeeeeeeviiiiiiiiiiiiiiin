@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import L, { LatLngExpression, Icon, Map } from 'leaflet';
 import { Label } from '@/components/ui/label';
-import { Loader2, MapPin } from 'lucide-react';
+import { Loader2, MapPin, LocateFixed } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { Button } from '@/components/ui/button';
 
 const customIcon = new Icon({
     iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
@@ -51,6 +52,44 @@ export function LocationPicker() {
         updateHiddenInputs(lat, lng);
     };
 
+    const centerOnUserLocation = () => {
+        if (!navigator.geolocation) {
+             toast({
+                variant: "destructive",
+                title: "Geolocalización no soportada",
+                description: "Tu navegador no permite obtener la ubicación.",
+            });
+            return;
+        }
+        setIsGettingLocation(true);
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                const { latitude, longitude } = position.coords;
+                const newPosition: LatLngExpression = [latitude, longitude];
+                
+                if (mapRef.current) {
+                    mapRef.current.setView(newPosition, 13);
+                     if (markerRef.current) {
+                        markerRef.current.setLatLng(newPosition);
+                    } else {
+                        markerRef.current = L.marker(newPosition, { icon: customIcon }).addTo(mapRef.current);
+                    }
+                }
+                updateHiddenInputs(latitude, longitude);
+                setIsGettingLocation(false);
+            },
+            (error) => {
+                setIsGettingLocation(false);
+                toast({
+                    variant: "destructive",
+                    title: "Error de ubicación",
+                    description: "No se pudo obtener la ubicación. Por favor, activa los servicios de ubicación en tu navegador.",
+                });
+            },
+            { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+        );
+    };
+
     const handleReset = () => {
          if (mapRef.current) {
             mapRef.current.setView([20, 0], 2);
@@ -79,51 +118,15 @@ export function LocationPicker() {
 
         mapRef.current = map;
         
-        const handleGetLocation = () => {
-            if (!navigator.geolocation) {
-                 toast({
-                    variant: "destructive",
-                    title: "Geolocalización no soportada",
-                    description: "Tu navegador no permite obtener la ubicación.",
-                });
-                return;
-            }
-            setIsGettingLocation(true);
-            navigator.geolocation.getCurrentPosition(
-                (position) => {
-                    const { latitude, longitude } = position.coords;
-                    const newPosition: LatLngExpression = [latitude, longitude];
-                    
-                    if (mapRef.current) {
-                        mapRef.current.setView(newPosition, 13);
-                         if (markerRef.current) {
-                            markerRef.current.setLatLng(newPosition);
-                        } else {
-                            markerRef.current = L.marker(newPosition, { icon: customIcon }).addTo(mapRef.current);
-                        }
-                    }
-                    updateHiddenInputs(latitude, longitude);
-                    setIsGettingLocation(false);
-                },
-                (error) => {
-                    setIsGettingLocation(false);
-                    toast({
-                        variant: "destructive",
-                        title: "Error de ubicación",
-                        description: "No se pudo obtener la ubicación. Por favor, activa los servicios de ubicación en tu navegador.",
-                    });
-                },
-                { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
-            );
-        };
-
-        handleGetLocation(); // Intentar obtener ubicación al inicio
+        centerOnUserLocation(); // Intentar obtener ubicación al inicio
 
         window.addEventListener('resetMap', handleReset);
 
         return () => {
-            map.remove();
-            mapRef.current = null;
+            if (mapRef.current) {
+                mapRef.current.remove();
+                mapRef.current = null;
+            }
             window.removeEventListener('resetMap', handleReset);
         };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -133,10 +136,23 @@ export function LocationPicker() {
         <div className="space-y-2">
             <Label className="flex items-center gap-2"><MapPin className="h-4 w-4"/> Ubicación del avistamiento</Label>
             <p className="text-sm text-muted-foreground">Haz clic en el mapa para marcar el punto exacto.</p>
-            <div ref={containerRef} className="h-64 w-full rounded-md overflow-hidden border bg-muted" />
+            <div className="relative">
+                <div ref={containerRef} className="h-64 w-full rounded-md overflow-hidden border bg-muted" />
+                <Button 
+                    type="button" 
+                    variant="secondary" 
+                    size="icon" 
+                    onClick={centerOnUserLocation}
+                    className="absolute top-2 right-2 z-[1000] shadow-md"
+                    aria-label="Usar mi ubicación actual"
+                    disabled={isGettingLocation}
+                >
+                    {isGettingLocation ? <Loader2 className="h-5 w-5 animate-spin" /> : <LocateFixed className="h-5 w-5" />}
+                </Button>
+            </div>
             {isGettingLocation && (
                 <p className="text-sm text-muted-foreground text-center flex items-center justify-center gap-2">
-                    <Loader2 className="h-4 w-4 animate-spin" /> Obteniendo ubicación inicial...
+                    <Loader2 className="h-4 w-4 animate-spin" /> Obteniendo ubicación...
                 </p>
             )}
             {selectedCoords && !isGettingLocation && (
