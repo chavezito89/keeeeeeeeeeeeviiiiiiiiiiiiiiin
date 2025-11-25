@@ -43,9 +43,7 @@ export function RoleSelector() {
   function onSubmit(values: z.infer<typeof usernameSchema>) {
     setIsLoading(true);
     localStorage.setItem(KEVIN_USERNAME_KEY, values.username);
-    setTimeout(() => {
-      router.push("/feed");
-    }, 500);
+    router.push("/feed");
   }
 
   const cardVariants = {
@@ -56,7 +54,7 @@ export function RoleSelector() {
 
   return (
     <div className="text-center">
-        <Image src="https://vxroruoskxkdlnfkkqdv.supabase.co/storage/v1/object/public/LOGO/logo%20cuadrado.png" alt="Logo de ¿Dónde está Kevin?" width={200} height={200} className="mx-auto mb-6" />
+        <Image src="https://vxroruoskxkdlnfkkqdv.supabase.co/storage/v1/object/public/LOGO/logo%20cuadrado.png" alt="Logo de ¿Dónde está Kevin?" width={250} height={250} className="mx-auto mb-6" />
         <h1 className="text-4xl font-bold tracking-tight font-headline">{APP_NAME}</h1>
         <p className="text-muted-foreground mt-2 mb-8">¿Pero dónde se metió? Únete a la búsqueda.</p>
       
