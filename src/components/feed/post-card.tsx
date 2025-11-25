@@ -64,7 +64,7 @@ export function PostCard({ post }: PostCardProps) {
         <CardContent className="p-6 flex-grow">
           {comment && <p className="text-foreground mb-4">{comment}</p>}
           
-           <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
+           <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
                 <Clock className="w-4 h-4" />
                 <span>{formattedDate}</span>
             </div>
@@ -79,7 +79,7 @@ export function PostCard({ post }: PostCardProps) {
             </div>
           )}
         </CardContent>
-        <CardFooter className="p-4 bg-secondary/30 flex justify-between items-center">
+        <CardFooter className="p-4 bg-secondary/30 flex justify-between items-center gap-2">
           <LocationDisplay 
             latitude={latitude} 
             longitude={longitude} 
@@ -87,7 +87,7 @@ export function PostCard({ post }: PostCardProps) {
             onLocationDetails={setLocationDetails}
           />
            <DialogTrigger asChild>
-            <Button variant="ghost" size="sm" className="flex items-center gap-2 text-muted-foreground hover:text-primary">
+            <Button variant="ghost" size="sm" className="flex items-center gap-2 text-muted-foreground hover:text-primary flex-shrink-0">
               <MessageSquare className="h-4 w-4"/>
               <span>{comments.length}</span>
             </Button>

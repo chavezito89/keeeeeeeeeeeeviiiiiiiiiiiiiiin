@@ -50,27 +50,25 @@ export function LocationDisplay({ latitude, longitude, createdAt, onLocationDeta
     const formattedDate = formatDistanceToNow(new Date(createdAt), { addSuffix: true, locale: es });
 
     return (
-        <div className="w-full space-y-3">
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                 <Link href={gmapsUrl} target="_blank" rel="noopener noreferrer" className="flex items-start gap-2 group/link flex-1 min-w-0">
-                    <MapPin className="w-4 h-4 text-primary flex-shrink-0 mt-1" />
-                    <div className="flex flex-col min-w-0">
-                        {isLoading ? (
-                             <div className="flex items-center gap-2">
-                                <Loader2 className="w-4 h-4 animate-spin"/>
-                                <span className="text-sm text-muted-foreground">Buscando...</span>
-                             </div>
-                        ) : (
-                            <span className="text-sm font-medium text-foreground group-hover/link:text-primary transition-colors truncate" title={address || ""}>
-                                {address}
-                            </span>
-                        )}
-                        <span className="text-xs text-muted-foreground group-hover/link:text-primary transition-colors">
-                            Ver en Google Maps
+        <div className="flex-1 min-w-0">
+            <Link href={gmapsUrl} target="_blank" rel="noopener noreferrer" className="flex items-start gap-2 group/link">
+                <MapPin className="w-4 h-4 text-primary flex-shrink-0 mt-1" />
+                <div className="flex-1 min-w-0">
+                    {isLoading ? (
+                         <div className="flex items-center gap-2">
+                            <Loader2 className="w-4 h-4 animate-spin"/>
+                            <span className="text-sm text-muted-foreground">Buscando...</span>
+                         </div>
+                    ) : (
+                        <span className="text-sm font-medium text-foreground group-hover/link:text-primary transition-colors truncate block" title={address || ""}>
+                            {address}
                         </span>
-                    </div>
-                </Link>
-            </div>
+                    )}
+                    <span className="text-xs text-muted-foreground group-hover/link:text-primary transition-colors">
+                        Ver en Google Maps
+                    </span>
+                </div>
+            </Link>
         </div>
     );
 }
