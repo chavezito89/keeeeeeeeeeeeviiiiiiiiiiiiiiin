@@ -3,6 +3,7 @@
 import { useState, useRef } from 'react';
 import { useFormStatus } from 'react-dom';
 import Image from 'next/image';
+import dynamic from 'next/dynamic';
 import { createPost } from '@/app/actions';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
@@ -11,7 +12,11 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Loader2, Image as ImageIcon, MessageSquare } from 'lucide-react';
-import { LocationPicker } from './location-picker';
+
+const LocationPicker = dynamic(() => import('./location-picker').then(mod => mod.LocationPicker), {
+    ssr: false,
+    loading: () => <div className="h-64 w-full rounded-md border flex items-center justify-center bg-muted"><Loader2 className="h-6 w-6 animate-spin"/></div>
+});
 
 function SubmitButton() {
     const { pending } = useFormStatus();
@@ -30,9 +35,10 @@ function SubmitButton() {
 
 export function PostForm() {
     const { toast } = useToast();
-    const [location, setLocation] = useState<{ lat: number, lon: number } | null>(null);
     const [previewImage, setPreviewImage] = useState<string | null>(null);
     const formRef = useRef<HTMLFormElement>(null);
+    const latInputRef = useRef<HTMLInputElement>(null);
+    const lonInputRef = useRef<HTMLInputElement>(null);
 
     const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
@@ -44,7 +50,10 @@ export function PostForm() {
     }
 
     const handleFormAction = async (formData: FormData) => {
-        if (!location) {
+        const lat = formData.get('latitude');
+        const lon = formData.get('longitude');
+
+        if (!lat || !lon || lat === '0' || lon === '0') {
              toast({
                 variant: "destructive",
                 title: "Ubicación requerida",
@@ -52,9 +61,6 @@ export function PostForm() {
             });
             return;
         }
-
-        formData.set('latitude', location.lat.toString());
-        formData.set('longitude', location.lon.toString());
 
         const result = await createPost(formData);
         if (result?.success) {
@@ -64,7 +70,9 @@ export function PostForm() {
             });
             formRef.current?.reset();
             setPreviewImage(null);
-            setLocation(null);
+            // We need a way to reset the map component's internal state
+            window.dispatchEvent(new Event('resetMap'));
+
         } else if (result?.errors) {
             const errorMessages = Object.values(result.errors).flat().join('\n');
             toast({
@@ -102,13 +110,10 @@ export function PostForm() {
                         <Textarea id="comment" name="comment" placeholder="¿Qué estás haciendo?" />
                     </div>
 
-                    <LocationPicker
-                        location={location}
-                        onLocationChange={setLocation}
-                    />
+                    <LocationPicker />
 
-                    <input type="hidden" name="latitude" value={location?.lat || ''} />
-                    <input type="hidden" name="longitude" value={location?.lon || ''} />
+                    <input type="hidden" name="latitude" ref={latInputRef} defaultValue="0" />
+                    <input type="hidden" name="longitude" ref={lonInputRef} defaultValue="0" />
                 </CardContent>
                 <CardFooter>
                     <SubmitButton />
