@@ -38,7 +38,7 @@ function MapContent({ onLocationChange }: { onLocationChange: (location: { lat: 
     return null;
 }
 
-export function LocationPicker() {
+function LocationPickerComponent() {
     const { toast } = useToast();
     const [isGettingLocation, setIsGettingLocation] = useState(true);
     const [map, setMap] = useState<L.Map | null>(null);
@@ -54,10 +54,15 @@ export function LocationPicker() {
     };
     
     const handleLocationChange = (newLoc: { lat: number; lon: number; }) => {
-        setMarkerPosition([newLoc.lat, newLoc.lon]);
-        updateHiddenInputs(newLoc.lat, newLoc.lon);
-        if (map) {
-            map.setView([newLoc.lat, newLoc.lon], map.getZoom());
+        if (newLoc.lat === 0 && newLoc.lon === 0) {
+            setMarkerPosition(null);
+            updateHiddenInputs(0,0);
+        } else {
+            setMarkerPosition([newLoc.lat, newLoc.lon]);
+            updateHiddenInputs(newLoc.lat, newLoc.lon);
+            if (map) {
+                map.setView([newLoc.lat, newLoc.lon], map.getZoom());
+            }
         }
     };
     
@@ -137,3 +142,6 @@ export function LocationPicker() {
         </div>
     );
 }
+
+
+export const LocationPicker = memo(LocationPickerComponent);

@@ -37,8 +37,6 @@ export function PostForm() {
     const { toast } = useToast();
     const [previewImage, setPreviewImage] = useState<string | null>(null);
     const formRef = useRef<HTMLFormElement>(null);
-    const latInputRef = useRef<HTMLInputElement>(null);
-    const lonInputRef = useRef<HTMLInputElement>(null);
 
     const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
@@ -112,8 +110,8 @@ export function PostForm() {
 
                     <LocationPicker />
 
-                    <input type="hidden" name="latitude" ref={latInputRef} defaultValue="0" />
-                    <input type="hidden" name="longitude" ref={lonInputRef} defaultValue="0" />
+                    <input type="hidden" name="latitude" defaultValue="0" />
+                    <input type="hidden" name="longitude" defaultValue="0" />
                 </CardContent>
                 <CardFooter>
                     <SubmitButton />
