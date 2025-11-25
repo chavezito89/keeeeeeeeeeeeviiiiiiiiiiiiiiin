@@ -1,5 +1,6 @@
 import type { KevinPost, KevinComment } from "@/lib/types";
-import { supabase, supabaseServer } from "./client";
+import { supabase } from "./client";
+import { supabaseServer } from "./server";
 
 export async function getPosts(): Promise<KevinPost[]> {
   const { data, error } = await supabaseServer
