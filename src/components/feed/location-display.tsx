@@ -9,24 +9,29 @@ interface LocationDisplayProps {
     latitude: number;
     longitude: number;
     createdAt: string;
+    onLocationDetails: (details: { country: string, city: string, countryCode: string }) => void;
 }
 
-export function LocationDisplay({ latitude, longitude, createdAt }: LocationDisplayProps) {
+export function LocationDisplay({ latitude, longitude, createdAt, onLocationDetails }: LocationDisplayProps) {
     const [address, setAddress] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const gmapsUrl = `https://www.google.com/maps/search/?api=1&query=${latitude},${longitude}`;
     
-    // Static map image from OpenStreetMap
     const staticMapUrl = `https://render.openstreetmap.org/cgi-bin/export?bbox=${longitude-0.01},${latitude-0.01},${longitude+0.01},${latitude+0.01}&layer=mapnik&marker=${latitude},${longitude}`;
 
     useEffect(() => {
         const fetchAddress = async () => {
             setIsLoading(true);
             try {
-                const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`);
+                const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&accept-language=es`);
                 const data = await response.json();
-                if (data && data.display_name) {
-                    setAddress(data.display_name);
+                if (data) {
+                    setAddress(data.display_name || "Location details not found.");
+                    onLocationDetails({
+                        city: data.address?.city || data.address?.town || data.address?.village || '',
+                        country: data.address?.country || '',
+                        countryCode: data.address?.country_code || '',
+                    });
                 } else {
                     setAddress("Location details not found.");
                 }
@@ -39,6 +44,7 @@ export function LocationDisplay({ latitude, longitude, createdAt }: LocationDisp
         };
 
         fetchAddress();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [latitude, longitude]);
 
     return (
@@ -49,7 +55,7 @@ export function LocationDisplay({ latitude, longitude, createdAt }: LocationDisp
                     alt={`Map of location at ${latitude}, ${longitude}`}
                     fill
                     style={{ objectFit: 'cover' }}
-                    unoptimized // Necessary for external non-whitelisted image URLs in this context
+                    unoptimized
                 />
             </div>
             
