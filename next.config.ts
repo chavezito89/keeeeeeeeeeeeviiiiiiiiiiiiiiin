@@ -39,6 +39,12 @@ const nextConfig: NextConfig = {
         hostname: 'render.openstreetmap.org',
         port: '',
         pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'flagcdn.com',
+        port: '',
+        pathname: '/**',
       }
     ],
   },
