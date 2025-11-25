@@ -3,7 +3,6 @@
 import { useState, useRef } from 'react';
 import { useFormStatus } from 'react-dom';
 import Image from 'next/image';
-import dynamic from 'next/dynamic';
 import { createPost } from '@/app/actions';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
@@ -12,11 +11,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Loader2, Image as ImageIcon, MessageSquare } from 'lucide-react';
+import { LocationPicker } from './location-picker';
 
-const LocationPicker = dynamic(() => import('./location-picker').then(mod => mod.LocationPicker), {
-    ssr: false,
-    loading: () => <div className="h-64 w-full rounded-md border flex items-center justify-center bg-muted"><Loader2 className="h-6 w-6 animate-spin"/></div>
-});
 
 function SubmitButton() {
     const { pending } = useFormStatus();

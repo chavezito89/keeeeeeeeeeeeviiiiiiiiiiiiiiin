@@ -1,8 +1,7 @@
 "use client";
 
-import { useState, useEffect, memo } from 'react';
-import { MapContainer, TileLayer, Marker, useMapEvents, useMap } from 'react-leaflet';
-import { LatLngExpression, Icon } from 'leaflet';
+import { useState, useEffect, useRef } from 'react';
+import L, { LatLngExpression, Icon, Map } from 'leaflet';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Loader2, MapPin } from 'lucide-react';
@@ -17,65 +16,53 @@ const customIcon = new Icon({
     shadowSize: [41, 41]
 });
 
-function MapContent({ onLocationChange, onMapReady }: { onLocationChange: (location: { lat: number, lon: number }) => void, onMapReady: (map: L.Map) => void }) {
-    const map = useMap();
-    
-    useEffect(() => {
-        onMapReady(map);
-    }, [map, onMapReady]);
-
-    useMapEvents({
-        click(e) {
-            onLocationChange({ lat: e.latlng.lat, lon: e.latlng.lng });
-        },
-    });
-
-    return null;
-}
-
-function LocationPickerComponent() {
+export function LocationPicker() {
     const { toast } = useToast();
     const [isGettingLocation, setIsGettingLocation] = useState(false);
-    const [map, setMap] = useState<L.Map | null>(null);
-    const [markerPosition, setMarkerPosition] = useState<LatLngExpression | null>(null);
+    
+    const mapRef = useRef<Map | null>(null);
+    const markerRef = useRef<L.Marker | null>(null);
+    const containerRef = useRef<HTMLDivElement | null>(null);
 
-    const updateHiddenInputs = (lat: number, lon: number) => {
+    const [selectedCoords, setSelectedCoords] = useState<string>("");
+
+    const updateHiddenInputs = (lat: number | null, lng: number | null) => {
         const latInput = document.querySelector('input[name="latitude"]') as HTMLInputElement;
         const lonInput = document.querySelector('input[name="longitude"]') as HTMLInputElement;
         if (latInput && lonInput) {
-            latInput.value = lat.toString();
-            lonInput.value = lon.toString();
+            latInput.value = lat?.toString() || '0';
+            lonInput.value = lng?.toString() || '0';
+        }
+        if (lat && lng) {
+            setSelectedCoords(`${lat.toFixed(4)}, ${lng.toFixed(4)}`);
+        } else {
+            setSelectedCoords("");
         }
     };
-    
-    const handleLocationChange = (newLoc: { lat: number; lon: number; }) => {
-        if (newLoc.lat === 0 && newLoc.lon === 0) {
-            setMarkerPosition(null);
-            updateHiddenInputs(0,0);
-        } else {
-            const newPosition: LatLngExpression = [newLoc.lat, newLoc.lon];
-            setMarkerPosition(newPosition);
-            updateHiddenInputs(newLoc.lat, newLoc.lon);
-            if (map) {
-                map.setView(newPosition, map.getZoom());
+
+    const handleMapClick = (e: L.LeafletMouseEvent) => {
+        const { lat, lng } = e.latlng;
+        if (mapRef.current) {
+            if (markerRef.current) {
+                markerRef.current.setLatLng(e.latlng);
+            } else {
+                markerRef.current = L.marker(e.latlng, { icon: customIcon }).addTo(mapRef.current);
             }
         }
+        updateHiddenInputs(lat, lng);
     };
 
     const handleReset = () => {
-         if (map) {
-            map.setView([20, 0], 2);
+         if (mapRef.current) {
+            mapRef.current.setView([20, 0], 2);
+            if (markerRef.current) {
+                markerRef.current.remove();
+                markerRef.current = null;
+            }
          }
-         // This will clear the marker via state in the parent component
-         handleLocationChange({ lat: 0, lon: 0 }); 
+         updateHiddenInputs(null, null);
     }
 
-    useEffect(() => {
-        window.addEventListener('resetMap', handleReset);
-        return () => window.removeEventListener('resetMap', handleReset);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [map]);
-    
     const handleGetLocation = () => {
         if (!navigator.geolocation) {
              toast({
@@ -88,16 +75,18 @@ function LocationPickerComponent() {
         setIsGettingLocation(true);
         navigator.geolocation.getCurrentPosition(
             (position) => {
-                const newLocation = {
-                    lat: position.coords.latitude,
-                    lon: position.coords.longitude,
-                };
-                const newPosition: LatLngExpression = [newLocation.lat, newLocation.lon];
-                if (map) {
-                    map.setView(newPosition, 13);
+                const { latitude, longitude } = position.coords;
+                const newPosition: LatLngExpression = [latitude, longitude];
+                
+                if (mapRef.current) {
+                    mapRef.current.setView(newPosition, 13);
+                     if (markerRef.current) {
+                        markerRef.current.setLatLng(newPosition);
+                    } else {
+                        markerRef.current = L.marker(newPosition, { icon: customIcon }).addTo(mapRef.current);
+                    }
                 }
-                setMarkerPosition(newPosition);
-                updateHiddenInputs(newLocation.lat, newLocation.lon);
+                updateHiddenInputs(latitude, longitude);
                 setIsGettingLocation(false);
             },
             (error) => {
@@ -108,53 +97,59 @@ function LocationPickerComponent() {
                     description: "No se pudo obtener la ubicación. Por favor, activa los servicios de ubicación en tu navegador.",
                 });
             },
-            {
-                enableHighAccuracy: true,
-                timeout: 10000,
-                maximumAge: 0
-            }
+            { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
         );
     };
 
     useEffect(() => {
-        if (map) {
-            handleGetLocation();
-        }
+        if (!containerRef.current || mapRef.current) return;
+
+        const map = L.map(containerRef.current, {
+            center: [20, 0],
+            zoom: 2,
+            scrollWheelZoom: false,
+        });
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; OpenStreetMap contributors',
+        }).addTo(map);
+
+        map.on('click', handleMapClick);
+
+        mapRef.current = map;
+        
+        handleGetLocation(); // Intentar obtener ubicación al inicio
+
+        window.addEventListener('resetMap', handleReset);
+
+        return () => {
+            map.remove();
+            mapRef.current = null;
+            window.removeEventListener('resetMap', handleReset);
+        };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [map]);
+    }, []);
 
     return (
         <div className="space-y-2">
             <Label className="flex items-center gap-2"><MapPin className="h-4 w-4"/> Ubicación</Label>
-            <div className="h-64 w-full rounded-md overflow-hidden border">
-                <MapContainer center={[20, 0]} zoom={2} scrollWheelZoom={false} style={{ height: '100%', width: '100%' }} whenCreated={setMap}>
-                    <TileLayer
-                        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                    />
-                    {markerPosition && <Marker position={markerPosition} icon={customIcon}></Marker>}
-                    <MapContent onLocationChange={handleLocationChange} onMapReady={()=>{}} />
-                </MapContainer>
-            </div>
+            <div ref={containerRef} className="h-64 w-full rounded-md overflow-hidden border bg-muted" />
             <Button
                 type="button"
                 variant="outline"
                 onClick={handleGetLocation}
-                disabled={isGettingLocation || !map}
+                disabled={isGettingLocation}
                 className="w-full"
             >
                 {isGettingLocation ? (
                   <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Obteniendo ubicación...</>
                 ) : "Usar mi ubicación actual"}
             </Button>
-            {markerPosition && Array.isArray(markerPosition) && (
+            {selectedCoords && (
                 <p className="text-sm text-muted-foreground text-center">
-                    Seleccionado: {markerPosition[0].toFixed(4)}, {markerPosition[1].toFixed(4)}
+                    Seleccionado: {selectedCoords}
                 </p>
             )}
         </div>
     );
 }
-
-
-export const LocationPicker = memo(LocationPickerComponent);
