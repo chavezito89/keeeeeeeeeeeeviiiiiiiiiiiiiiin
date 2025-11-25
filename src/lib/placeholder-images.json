@@ -1,3 +1,28 @@
 {
-  "placeholderImages": []
+  "placeholderImages": [
+    {
+      "id": "kevin-1",
+      "description": "Kevin at a cafe",
+      "imageUrl": "https://images.unsplash.com/photo-1619922804338-b8e6d2ae7b62?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHxtYW4lMjBjb2ZmZWV8ZW58MHx8fHwxNzY0MDQ2MzQ4fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "man coffee"
+    },
+    {
+      "id": "kevin-2",
+      "description": "Kevin at the park",
+      "imageUrl": "https://images.unsplash.com/photo-1611498213110-66b8053149c9?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHxtYW4lMjBwYXJrfGVufDB8fHx8MTc2NDA5NzM3NXww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "man park"
+    },
+    {
+      "id": "kevin-3",
+      "description": "Kevin with a cat",
+      "imageUrl": "https://images.unsplash.com/photo-1601758174114-e711c0cbaa69?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxMHx8bWFuJTIwY2F0fGVufDB8fHx8MTc2NDA5NzM3NXww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "man cat"
+    },
+    {
+      "id": "kevin-4",
+      "description": "Kevin on a mountain",
+      "imageUrl": "https://images.unsplash.com/photo-1498889444388-e67ea62c464b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHxtYW4lMjBtb3VudGFpbnxlbnwwfHx8fDE3NjQwOTczNzV8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "man mountain"
+    }
+  ]
 }
