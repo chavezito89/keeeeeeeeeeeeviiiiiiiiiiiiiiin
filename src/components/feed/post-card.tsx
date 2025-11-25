@@ -29,10 +29,15 @@ export function PostCard({ post }: PostCardProps) {
       </CardContent>
       <CardFooter className="p-6 bg-secondary/50 flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <Link href={gmapsUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 group/link">
-          <MapPin className="w-4 h-4 text-primary" />
-          <span className="text-sm text-muted-foreground group-hover/link:text-primary transition-colors">
-            View Location
-          </span>
+          <MapPin className="w-4 h-4 text-primary flex-shrink-0" />
+          <div className="flex flex-col">
+            <span className="text-sm font-medium text-foreground group-hover/link:text-primary transition-colors">
+              {latitude.toFixed(4)}, {longitude.toFixed(4)}
+            </span>
+             <span className="text-xs text-muted-foreground group-hover/link:text-primary transition-colors">
+                View on map
+            </span>
+          </div>
         </Link>
         <div className="flex items-center gap-2">
             <Clock className="w-4 h-4 text-muted-foreground" />
