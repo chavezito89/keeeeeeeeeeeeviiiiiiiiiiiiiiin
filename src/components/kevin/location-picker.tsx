@@ -63,6 +63,11 @@ export function LocationPicker({ location, onLocationChange }: LocationPickerPro
                     title: "Error de Ubicación",
                     description: "No se pudo obtener la ubicación. Por favor, activa los servicios de ubicación en tu navegador.",
                 });
+            },
+            {
+                enableHighAccuracy: true,
+                timeout: 10000,
+                maximumAge: 0
             }
         );
     };
