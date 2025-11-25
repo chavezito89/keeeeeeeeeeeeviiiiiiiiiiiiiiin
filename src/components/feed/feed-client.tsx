@@ -6,6 +6,7 @@ import type { KevinPost } from "@/lib/types";
 import { KEVIN_USERNAME_KEY } from "@/lib/constants";
 import { FeedGrid } from "./feed-grid";
 import { motion } from "framer-motion";
+import { Loader2 } from "lucide-react";
 
 interface FeedClientProps {
   posts: KevinPost[];
@@ -13,6 +14,7 @@ interface FeedClientProps {
 
 export function FeedClient({ posts }: FeedClientProps) {
   const [username, setUsername] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
 
   useEffect(() => {
@@ -21,13 +23,15 @@ export function FeedClient({ posts }: FeedClientProps) {
       router.push("/");
     } else {
       setUsername(storedUsername);
+      setIsLoading(false);
     }
   }, [router]);
 
-  if (!username) {
+  if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-screen">
-        <p>Cargando...</p>
+      <div className="flex flex-col items-center justify-center h-screen gap-4">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <p className="text-muted-foreground">Cargando feed...</p>
       </div>
     );
   }
