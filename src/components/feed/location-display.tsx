@@ -2,10 +2,8 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { MapPin, Clock, Loader2 } from "lucide-react";
-import { MapContainer, TileLayer, Marker } from 'react-leaflet';
-import { LatLngExpression, Icon } from 'leaflet';
-import 'leaflet/dist/leaflet.css';
 
 interface LocationDisplayProps {
     latitude: number;
@@ -13,17 +11,13 @@ interface LocationDisplayProps {
     createdAt: string;
 }
 
-const customIcon = new Icon({
-    iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
-    iconSize: [25, 41],
-    iconAnchor: [12, 41],
-});
-
 export function LocationDisplay({ latitude, longitude, createdAt }: LocationDisplayProps) {
     const [address, setAddress] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const gmapsUrl = `https://www.google.com/maps/search/?api=1&query=${latitude},${longitude}`;
-    const position: LatLngExpression = [latitude, longitude];
+    
+    // Static map image from OpenStreetMap
+    const staticMapUrl = `https://render.openstreetmap.org/cgi-bin/export?bbox=${longitude-0.01},${latitude-0.01},${longitude+0.01},${latitude+0.01}&layer=mapnik&marker=${latitude},${longitude}`;
 
     useEffect(() => {
         const fetchAddress = async () => {
@@ -49,13 +43,14 @@ export function LocationDisplay({ latitude, longitude, createdAt }: LocationDisp
 
     return (
         <div className="w-full space-y-3">
-            <div className="h-40 w-full rounded-md overflow-hidden border">
-                 <MapContainer center={position} zoom={13} scrollWheelZoom={false} style={{ height: '100%', width: '100%' }} attributionControl={false} zoomControl={false}>
-                    <TileLayer
-                        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                    />
-                    <Marker position={position} icon={customIcon}></Marker>
-                </MapContainer>
+            <div className="h-40 w-full rounded-md overflow-hidden border relative">
+                <Image 
+                    src={staticMapUrl} 
+                    alt={`Map of location at ${latitude}, ${longitude}`}
+                    fill
+                    style={{ objectFit: 'cover' }}
+                    unoptimized // Necessary for external non-whitelisted image URLs in this context
+                />
             </div>
             
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
