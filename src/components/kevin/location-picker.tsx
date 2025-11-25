@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from 'react';
-import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
+import { useState, useEffect } from 'react';
+import { MapContainer, TileLayer, Marker, useMapEvents, useMap } from 'react-leaflet';
 import { LatLngExpression, Icon } from 'leaflet';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
@@ -31,10 +31,17 @@ function MapEvents({ onLocationChange }: { onLocationChange: (location: { lat: n
     return null;
 }
 
+function ChangeView({ center, zoom }: { center: LatLngExpression, zoom: number }) {
+    const map = useMap();
+    map.setView(center, zoom);
+    return null;
+}
+
 export function LocationPicker({ location, onLocationChange }: LocationPickerProps) {
     const { toast } = useToast();
     const [isGettingLocation, setIsGettingLocation] = useState(false);
-    const [mapCenter, setMapCenter] = useState<LatLngExpression>([51.505, -0.09]);
+    const [mapCenter, setMapCenter] = useState<LatLngExpression>([20, 0]);
+    const [mapZoom, setMapZoom] = useState(2);
     
     const handleGetLocation = () => {
         setIsGettingLocation(true);
@@ -46,30 +53,33 @@ export function LocationPicker({ location, onLocationChange }: LocationPickerPro
                 };
                 onLocationChange(newLocation);
                 setMapCenter([newLocation.lat, newLocation.lon]);
+                setMapZoom(13);
                 setIsGettingLocation(false);
             },
             (error) => {
                 setIsGettingLocation(false);
                 toast({
                     variant: "destructive",
-                    title: "Location Error",
-                    description: "Could not get location. Please enable location services in your browser.",
+                    title: "Error de Ubicación",
+                    description: "No se pudo obtener la ubicación. Por favor, activa los servicios de ubicación en tu navegador.",
                 });
             }
         );
     };
 
+    useEffect(() => {
+        handleGetLocation();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
     const position = location ? [location.lat, location.lon] as LatLngExpression : null;
 
     return (
         <div className="space-y-2">
-            <Label className="flex items-center gap-2"><MapPin className="h-4 w-4"/> Location</Label>
+            <Label className="flex items-center gap-2"><MapPin className="h-4 w-4"/> Ubicación</Label>
             <div className="h-64 w-full rounded-md overflow-hidden border">
-                <MapContainer center={mapCenter} zoom={location ? 13 : 3} scrollWheelZoom={false} style={{ height: '100%', width: '100%' }} whenCreated={(map) => {
-                    if (location) {
-                        map.setView([location.lat, location.lon], 13);
-                    }
-                }}>
+                <MapContainer center={mapCenter} zoom={mapZoom} scrollWheelZoom={false} style={{ height: '100%', width: '100%' }}>
+                    <ChangeView center={mapCenter} zoom={mapZoom} />
                     <TileLayer
                         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -85,12 +95,12 @@ export function LocationPicker({ location, onLocationChange }: LocationPickerPro
                 disabled={isGettingLocation}
                 className="w-full"
             >
-                {isGettingLocation && <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Getting Current Location...</>}
-                {!isGettingLocation && "Use My Current Location"}
+                {isGettingLocation && <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Obteniendo ubicación...</>}
+                {!isGettingLocation && "Usar mi ubicación actual"}
             </Button>
             {location && (
                 <p className="text-sm text-muted-foreground text-center">
-                    Selected: {location.lat.toFixed(4)}, {location.lon.toFixed(4)}
+                    Seleccionado: {location.lat.toFixed(4)}, {location.lon.toFixed(4)}
                 </p>
             )}
         </div>
