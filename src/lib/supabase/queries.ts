@@ -63,7 +63,7 @@ export async function uploadPostImage(file: File) {
     return data.publicUrl;
 }
 
-export async function getComments(postId: string): Promise<KevinComment[]> {
+export async function getComments(postId: number): Promise<KevinComment[]> {
   const { data, error } = await supabase
     .from('post_comments')
     .select('*')
@@ -77,7 +77,7 @@ export async function getComments(postId: string): Promise<KevinComment[]> {
   return data;
 }
 
-export async function addComment(commentData: { post_id: string; username: string; comment: string }) {
+export async function addComment(commentData: { post_id: number; username: string; comment: string }) {
     const { data, error } = await supabase
         .from('post_comments')
         .insert([commentData])

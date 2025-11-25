@@ -1,5 +1,5 @@
 export type KevinPost = {
-  id: string;
+  id: number;
   imageUrl: string;
   imageHint: string;
   comment: string | null;
@@ -9,8 +9,8 @@ export type KevinPost = {
 };
 
 export type KevinComment = {
-  id: string;
-  post_id: string;
+  id: number;
+  post_id: number;
   username: string;
   comment: string;
   created_at: string;

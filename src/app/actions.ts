@@ -12,7 +12,7 @@ const postSchema = z.object({
 });
 
 const commentSchema = z.object({
-    postId: z.string(),
+    postId: z.coerce.number(),
     username: z.string(),
     comment: z.string().min(1, "El comentario no puede estar vacío.").max(500, "El comentario es demasiado largo."),
 });

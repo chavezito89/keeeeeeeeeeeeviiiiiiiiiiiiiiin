@@ -26,7 +26,7 @@ function SubmitButton() {
     )
 }
 
-export function CommentSection({ postId }: { postId: string }) {
+export function CommentSection({ postId }: { postId: number }) {
     const [comments, setComments] = useState<KevinComment[]>([]);
     const [username, setUsername] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(true);
@@ -52,7 +52,7 @@ export function CommentSection({ postId }: { postId: string }) {
             return;
         }
 
-        formData.set('postId', postId);
+        formData.set('postId', postId.toString());
         formData.set('username', username);
         
         const result = await createComment(formData);
@@ -61,7 +61,7 @@ export function CommentSection({ postId }: { postId: string }) {
             formRef.current?.reset();
             // Optimistically add comment
             const newComment: KevinComment = {
-                id: Math.random().toString(), // temporary id
+                id: Math.random(), // temporary id
                 post_id: postId,
                 username: username,
                 comment: formData.get('comment') as string,
@@ -113,6 +113,7 @@ export function CommentSection({ postId }: { postId: string }) {
                         rows={1}
                         required
                     />
+                     <input type="hidden" name="postId" value={postId} />
                     <SubmitButton />
                 </form>
             )}
