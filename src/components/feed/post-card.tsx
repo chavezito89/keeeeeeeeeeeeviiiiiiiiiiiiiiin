@@ -1,8 +1,7 @@
 import Image from "next/image";
-import Link from "next/link";
-import { MapPin, Clock } from "lucide-react";
 import type { KevinPost } from "@/lib/types";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
+import { LocationDisplay } from "./location-display";
 
 interface PostCardProps {
   post: KevinPost;
@@ -10,7 +9,6 @@ interface PostCardProps {
 
 export function PostCard({ post }: PostCardProps) {
   const { imageUrl, imageHint, comment, latitude, longitude, createdAt } = post;
-  const gmapsUrl = `https://www.google.com/maps/search/?api=1&query=${latitude},${longitude}`;
 
   return (
     <Card className="overflow-hidden h-full flex flex-col group transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
@@ -27,22 +25,12 @@ export function PostCard({ post }: PostCardProps) {
       <CardContent className="p-6 flex-grow">
         {comment && <p className="text-foreground">{comment}</p>}
       </CardContent>
-      <CardFooter className="p-6 bg-secondary/50 flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <Link href={gmapsUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 group/link">
-          <MapPin className="w-4 h-4 text-primary flex-shrink-0" />
-          <div className="flex flex-col">
-            <span className="text-sm font-medium text-foreground group-hover/link:text-primary transition-colors">
-              {latitude.toFixed(4)}, {longitude.toFixed(4)}
-            </span>
-             <span className="text-xs text-muted-foreground group-hover/link:text-primary transition-colors">
-                View on map
-            </span>
-          </div>
-        </Link>
-        <div className="flex items-center gap-2">
-            <Clock className="w-4 h-4 text-muted-foreground" />
-            <span className="text-sm text-muted-foreground">{createdAt}</span>
-        </div>
+      <CardFooter className="p-4 bg-secondary/30">
+        <LocationDisplay 
+          latitude={latitude} 
+          longitude={longitude} 
+          createdAt={createdAt} 
+        />
       </CardFooter>
     </Card>
   );
