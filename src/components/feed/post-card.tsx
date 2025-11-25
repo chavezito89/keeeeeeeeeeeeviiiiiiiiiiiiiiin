@@ -75,7 +75,7 @@ export function PostCard({ post }: PostCardProps) {
                   latitude={latitude}
                   longitude={longitude}
                   createdAt={createdAt}
-                  onLocationDetails={() => {}} // Details already loaded on card
+                  onLocationDetails={setLocationDetails}
                 />
               </div>
               <div className="flex-grow flex flex-col min-h-0">
