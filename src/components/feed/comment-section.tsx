@@ -38,13 +38,23 @@ export function CommentSection({ postId }: { postId: number }) {
         setUsername(storedUsername);
 
         async function fetchComments() {
-            setIsLoading(true);
-            const fetchedComments = await getComments(postId);
-            setComments(fetchedComments);
-            setIsLoading(false);
+            try {
+                setIsLoading(true);
+                const fetchedComments = await getComments(postId);
+                setComments(fetchedComments);
+            } catch (error) {
+                console.error("Error fetching comments:", error);
+                 toast({
+                    variant: "destructive",
+                    title: "Error",
+                    description: "No se pudieron cargar los comentarios.",
+                });
+            } finally {
+                setIsLoading(false);
+            }
         }
         fetchComments();
-    }, [postId]);
+    }, [postId, toast]);
 
     const handleFormAction = async (formData: FormData) => {
         if (!username) {
@@ -55,20 +65,24 @@ export function CommentSection({ postId }: { postId: number }) {
         formData.set('postId', postId.toString());
         formData.set('username', username);
         
+        const newCommentText = formData.get('comment') as string;
+        
+        // Optimistically add comment
+        const newComment: KevinComment = {
+            id: Math.random(), // temporary id
+            post_id: postId,
+            username: username,
+            comment: newCommentText,
+            created_at: new Date().toISOString(),
+        };
+        setComments(prev => [...prev, newComment]);
+        formRef.current?.reset();
+        
         const result = await createComment(formData);
 
-        if (result?.success) {
-            formRef.current?.reset();
-            // Optimistically add comment
-            const newComment: KevinComment = {
-                id: Math.random(), // temporary id
-                post_id: postId,
-                username: username,
-                comment: formData.get('comment') as string,
-                created_at: new Date().toISOString(),
-            };
-            setComments(prev => [...prev, newComment]);
-        } else {
+        if (!result?.success) {
+            // Revert optimistic update
+            setComments(prev => prev.filter(c => c.id !== newComment.id));
              toast({
                 variant: "destructive",
                 title: "Error",
@@ -98,7 +112,7 @@ export function CommentSection({ postId }: { postId: number }) {
                                         {formatDistanceToNow(new Date(comment.created_at), { addSuffix: true, locale: es })}
                                     </p>
                                 </div>
-                                <p className="text-foreground">{comment.comment}</p>
+                                <p className="text-foreground whitespace-pre-wrap">{comment.comment}</p>
                             </div>
                         ))
                     )}

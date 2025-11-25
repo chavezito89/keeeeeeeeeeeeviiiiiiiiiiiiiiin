@@ -24,46 +24,6 @@ export async function getPosts(): Promise<KevinPost[]> {
   }));
 }
 
-export async function addPost(postData: Omit<KevinPost, 'id' | 'createdAt' | 'imageHint'> & { image_url: string }) {
-    const { image_url, comment, latitude, longitude } = postData;
-    
-    const { data, error } = await supabaseServer
-        .from('posts')
-        .insert([
-            { 
-                image_url,
-                comment,
-                latitude,
-                longitude,
-            }
-        ])
-        .select();
-
-    if (error) {
-        console.error("Error adding post:", error);
-        throw new Error("Failed to add post to the database.");
-    }
-    
-    return data;
-}
-
-export async function uploadPostImage(file: File) {
-    const fileExt = file.name.split('.').pop();
-    const fileName = `${Math.random()}.${fileExt}`;
-    const filePath = `${fileName}`;
-
-    const { error: uploadError } = await supabaseServer.storage.from('posts').upload(filePath, file);
-
-    if (uploadError) {
-        console.error('Error uploading image:', uploadError);
-        throw new Error('Image upload failed.');
-    }
-
-    const { data } = supabase.storage.from('posts').getPublicUrl(filePath);
-
-    return data.publicUrl;
-}
-
 export async function getComments(postId: number): Promise<KevinComment[]> {
   const { data, error } = await supabase
     .from('post_comments')
@@ -76,18 +36,4 @@ export async function getComments(postId: number): Promise<KevinComment[]> {
     return [];
   }
   return data;
-}
-
-export async function addComment(commentData: { post_id: number; username: string; comment: string }) {
-    const { data, error } = await supabase
-        .from('post_comments')
-        .insert([commentData])
-        .select();
-
-    if (error) {
-        console.error("Error adding comment:", error);
-        throw new Error("Failed to add comment to the database.");
-    }
-    
-    return data;
 }

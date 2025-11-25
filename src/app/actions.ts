@@ -2,7 +2,10 @@
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import { addPost, uploadPostImage, addComment } from "@/lib/supabase/queries";
+import { addComment } from "@/lib/supabase/queries";
+import { supabaseServer } from "@/lib/supabase/server";
+import { supabase } from "@/lib/supabase/client";
+
 
 const postSchema = z.object({
     comment: z.string().max(500, "El comentario es demasiado largo.").optional(),
@@ -16,6 +19,23 @@ const commentSchema = z.object({
     username: z.string(),
     comment: z.string().min(1, "El comentario no puede estar vacío.").max(500, "El comentario es demasiado largo."),
 });
+
+async function uploadPostImage(file: File) {
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${Math.random()}.${fileExt}`;
+    const filePath = `${fileName}`;
+
+    const { error: uploadError } = await supabaseServer.storage.from('posts').upload(filePath, file);
+
+    if (uploadError) {
+        console.error('Error uploading image:', uploadError);
+        throw new Error('Image upload failed.');
+    }
+
+    const { data } = supabase.storage.from('posts').getPublicUrl(filePath);
+
+    return data.publicUrl;
+}
 
 export async function createPost(formData: FormData) {
     const validatedFields = postSchema.safeParse({
@@ -34,12 +54,21 @@ export async function createPost(formData: FormData) {
     try {
         const imageUrl = await uploadPostImage(validatedFields.data.image);
 
-        await addPost({
-            image_url: imageUrl,
-            comment: validatedFields.data.comment || null,
-            latitude: validatedFields.data.latitude,
-            longitude: validatedFields.data.longitude,
-        });
+        const { error } = await supabaseServer
+            .from('posts')
+            .insert([
+                { 
+                    image_url: imageUrl,
+                    comment: validatedFields.data.comment || null,
+                    latitude: validatedFields.data.latitude,
+                    longitude: validatedFields.data.longitude,
+                }
+            ]);
+
+        if (error) {
+            console.error("Error adding post:", error);
+            throw new Error("Failed to add post to the database.");
+        }
 
         revalidatePath("/feed");
         return { success: true, message: "¡Nuevo avistamiento registrado!" };
@@ -67,11 +96,19 @@ export async function createComment(formData: FormData) {
     }
 
     try {
-        await addComment({
-            post_id: validatedFields.data.postId,
-            username: validatedFields.data.username,
-            comment: validatedFields.data.comment,
-        });
+        const { error } = await supabase
+            .from('post_comments')
+            .insert([{
+                post_id: validatedFields.data.postId,
+                username: validatedFields.data.username,
+                comment: validatedFields.data.comment,
+            }]);
+
+        if (error) {
+            console.error("Error adding comment:", error);
+            throw new Error("Failed to add comment to the database.");
+        }
+
 
         revalidatePath(`/feed`); // Could be more specific if we had post pages
         return { success: true };
