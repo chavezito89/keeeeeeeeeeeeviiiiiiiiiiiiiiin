@@ -1,12 +1,13 @@
+
 "use client";
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { KevinPost } from "@/lib/types";
 import { KEVIN_USERNAME_KEY } from "@/lib/constants";
-import { FeedGrid } from "./feed-grid";
 import { motion } from "framer-motion";
 import { Loader2 } from "lucide-react";
+import { FeedTabs } from "./feed-tabs";
 
 interface FeedClientProps {
   posts: KevinPost[];
@@ -46,7 +47,7 @@ export function FeedClient({ posts }: FeedClientProps) {
       >
         ¡Bienvenido, <span className="text-primary">{username}</span>!
       </motion.h1>
-      <FeedGrid posts={posts} />
+      <FeedTabs posts={posts} />
     </div>
   );
 }

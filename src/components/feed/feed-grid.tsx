@@ -1,3 +1,4 @@
+
 import type { KevinPost } from "@/lib/types";
 import { PostCard } from "./post-card";
 import { motion } from "framer-motion";
@@ -40,7 +41,7 @@ export function FeedGrid({ posts }: FeedGridProps) {
       animate="visible"
     >
       {posts.map((post) => (
-        <motion.div key={post.id} variants={itemVariants}>
+        <motion.div key={post.id} variants={itemVariants} id={`post-${post.id}`}>
           <PostCard post={post} />
         </motion.div>
       ))}
