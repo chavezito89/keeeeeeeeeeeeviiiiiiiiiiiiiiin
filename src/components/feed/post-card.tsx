@@ -14,12 +14,13 @@ import { Button } from "../ui/button";
 import { MessageSquare, Forward, Clock, Heart } from "lucide-react";
 import { formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
+import { FloatingHearts } from "./floating-hearts";
 
 interface PostCardProps {
   post: KevinPost;
 }
 
-function LikeButton({ post, username }: { post: KevinPost; username: string | null }) {
+function LikeButton({ post, username, onLike }: { post: KevinPost; username: string | null, onLike: () => void }) {
     const [optimisticLikes, toggleOptimisticLike] = useOptimistic(
         post.post_likes,
         (state, newLike: { username: string }) => {
@@ -37,7 +38,11 @@ function LikeButton({ post, username }: { post: KevinPost; username: string | nu
     return (
         <form action={async (formData) => {
             if (!username) return;
+            const isLiking = !userHasLiked;
             toggleOptimisticLike({ username });
+            if(isLiking) {
+                onLike();
+            }
             await toggleLike(formData);
         }}>
             <input type="hidden" name="postId" value={post.id} />
@@ -56,6 +61,7 @@ export function PostCard({ post }: PostCardProps) {
   const [comments, setComments] = useState<KevinComment[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [username, setUsername] = useState<string | null>(null);
+  const [heartTrigger, setHeartTrigger] = useState(0);
 
   useEffect(() => {
     const storedUsername = localStorage.getItem(KEVIN_USERNAME_KEY);
@@ -67,6 +73,10 @@ export function PostCard({ post }: PostCardProps) {
     }
     fetchComments();
   }, [id]);
+
+  const handleLike = () => {
+    setHeartTrigger(prev => prev + 1);
+  };
 
   const flagUrl = locationDetails?.countryCode ? `https://flagcdn.com/w40/${locationDetails.countryCode.toLowerCase()}.png` : null;
   const latestComment = comments.length > 0 ? comments[comments.length - 1] : null;
@@ -85,6 +95,7 @@ export function PostCard({ post }: PostCardProps) {
                 className="object-cover w-full h-full transition-transform duration-300 group-hover:scale-105"
                 data-ai-hint={imageHint}
               />
+              <FloatingHearts trigger={heartTrigger} />
               {locationDetails && (
                 <div className="absolute top-0 left-0 p-3 bg-gradient-to-r from-black/70 to-transparent rounded-br-lg">
                   <div className="flex items-center gap-2">
@@ -124,7 +135,7 @@ export function PostCard({ post }: PostCardProps) {
             onLocationDetails={setLocationDetails}
           />
            <div className="flex items-center gap-1">
-             <LikeButton post={post} username={username} />
+             <LikeButton post={post} username={username} onLike={handleLike} />
              <DialogTrigger asChild>
               <Button variant="ghost" size="sm" className="flex items-center gap-2 text-muted-foreground hover:text-primary flex-shrink-0">
                 <MessageSquare className="h-4 w-4"/>

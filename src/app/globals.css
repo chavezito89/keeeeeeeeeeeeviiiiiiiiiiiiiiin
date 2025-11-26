@@ -82,3 +82,24 @@
     @apply bg-background text-foreground;
   }
 }
+
+@layer utilities {
+  .floating-heart {
+    @apply absolute bottom-0 text-red-500 fill-current;
+    animation: float-up forwards;
+    width: 24px;
+    height: 24px;
+    opacity: 0;
+  }
+
+  @keyframes float-up {
+    0% {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+    100% {
+      opacity: 0;
+      transform: translateY(-200px) scale(1.5);
+    }
+  }
+}
