@@ -10,6 +10,10 @@ import { Skeleton } from "../ui/skeleton";
 interface FeedTabsProps {
     posts: KevinPost[];
     mapboxToken?: string;
+    activeTab: string;
+    onTabChange: (tab: string) => void;
+    focusedPost: KevinPost | null;
+    onViewOnMap: (post: KevinPost) => void;
 }
 
 const DynamicFeedMap = dynamic(() => import('./feed-map').then(mod => mod.FeedMap), {
@@ -18,19 +22,19 @@ const DynamicFeedMap = dynamic(() => import('./feed-map').then(mod => mod.FeedMa
 });
 
 
-export function FeedTabs({ posts, mapboxToken }: FeedTabsProps) {
+export function FeedTabs({ posts, mapboxToken, activeTab, onTabChange, focusedPost, onViewOnMap }: FeedTabsProps) {
     return (
-        <Tabs defaultValue="grid" className="w-full">
+        <Tabs value={activeTab} onValueChange={onTabChange} className="w-full">
             <TabsList className="grid w-full grid-cols-2 max-w-sm mx-auto mb-6">
                 <TabsTrigger value="grid">Avistamientos</TabsTrigger>
                 <TabsTrigger value="mapa">Kevin Mapa</TabsTrigger>
             </TabsList>
             <TabsContent value="grid">
-                <FeedGrid posts={posts} />
+                <FeedGrid posts={posts} onViewOnMap={onViewOnMap} />
             </TabsContent>
             <TabsContent value="mapa">
                 <div className="aspect-[4/3] md:aspect-video w-full rounded-lg border bg-muted flex items-center justify-center overflow-hidden">
-                    <DynamicFeedMap posts={posts} mapboxAccessToken={mapboxToken} />
+                    <DynamicFeedMap posts={posts} mapboxAccessToken={mapboxToken} flyToPost={focusedPost} />
                 </div>
             </TabsContent>
         </Tabs>

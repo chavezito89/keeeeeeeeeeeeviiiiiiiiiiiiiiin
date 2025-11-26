@@ -1,23 +1,20 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Link from "next/link";
-import { MapPin, Clock, Loader2 } from "lucide-react";
+import { MapPin, Loader2 } from "lucide-react";
 import { es } from 'date-fns/locale';
-import { formatDistanceToNow } from 'date-fns';
-
+import { Button } from "../ui/button";
 
 interface LocationDisplayProps {
     latitude: number;
     longitude: number;
-    createdAt: string;
     onLocationDetails: (details: { country: string, city: string, countryCode: string }) => void;
+    onViewOnMap: () => void;
 }
 
-export function LocationDisplay({ latitude, longitude, createdAt, onLocationDetails }: LocationDisplayProps) {
+export function LocationDisplay({ latitude, longitude, onLocationDetails, onViewOnMap }: LocationDisplayProps) {
     const [address, setAddress] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(true);
-    const gmapsUrl = `https://www.google.com/maps/search/?api=1&query=${latitude},${longitude}`;
     
     useEffect(() => {
         const fetchAddress = async () => {
@@ -46,12 +43,10 @@ export function LocationDisplay({ latitude, longitude, createdAt, onLocationDeta
         fetchAddress();
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [latitude, longitude]);
-    
-    const formattedDate = formatDistanceToNow(new Date(createdAt), { addSuffix: true, locale: es });
 
     return (
         <div className="flex-1 min-w-0">
-            <Link href={gmapsUrl} target="_blank" rel="noopener noreferrer" className="flex items-start gap-2 group/link">
+            <Button variant="link" onClick={onViewOnMap} className="flex items-start gap-2 group/link p-0 h-auto text-left">
                 <MapPin className="w-4 h-4 text-primary flex-shrink-0 mt-1" />
                 <div className="flex-1 min-w-0">
                     {isLoading ? (
@@ -65,10 +60,10 @@ export function LocationDisplay({ latitude, longitude, createdAt, onLocationDeta
                         </span>
                     )}
                     <span className="text-xs text-muted-foreground group-hover/link:text-primary transition-colors">
-                        Ver en Google Maps
+                        Ver en el mapa
                     </span>
                 </div>
-            </Link>
+            </Button>
         </div>
     );
 }

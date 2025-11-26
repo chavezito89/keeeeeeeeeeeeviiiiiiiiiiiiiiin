@@ -17,6 +17,8 @@ interface FeedClientProps {
 export function FeedClient({ posts, mapboxToken }: FeedClientProps) {
   const [username, setUsername] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState('grid');
+  const [focusedPost, setFocusedPost] = useState<KevinPost | null>(null);
   const router = useRouter();
 
   useEffect(() => {
@@ -28,6 +30,11 @@ export function FeedClient({ posts, mapboxToken }: FeedClientProps) {
       setIsLoading(false);
     }
   }, [router]);
+
+  const handleViewOnMap = (post: KevinPost) => {
+    setFocusedPost(post);
+    setActiveTab('mapa');
+  };
 
   if (isLoading) {
     return (
@@ -48,7 +55,14 @@ export function FeedClient({ posts, mapboxToken }: FeedClientProps) {
       >
         ¡Bienvenido, <span className="text-primary">{username}</span>!
       </motion.h1>
-      <FeedTabs posts={posts} mapboxToken={mapboxToken} />
+      <FeedTabs 
+        posts={posts} 
+        mapboxToken={mapboxToken}
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
+        focusedPost={focusedPost}
+        onViewOnMap={handleViewOnMap}
+      />
     </div>
   );
 }

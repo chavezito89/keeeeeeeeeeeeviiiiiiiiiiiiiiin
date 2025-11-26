@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import Map, { Marker, Popup, NavigationControl, MapRef } from 'react-map-gl';
 import type { KevinPost } from '@/lib/types';
 import Image from 'next/image';
@@ -13,9 +13,10 @@ import { Pin } from 'lucide-react';
 interface FeedMapProps {
     posts: KevinPost[];
     mapboxAccessToken?: string;
+    flyToPost?: KevinPost | null;
 }
 
-export function FeedMap({ posts, mapboxAccessToken }: FeedMapProps) {
+export function FeedMap({ posts, mapboxAccessToken, flyToPost }: FeedMapProps) {
     const [selectedPost, setSelectedPost] = useState<KevinPost | null>(null);
     const mapRef = useRef<MapRef>(null);
 
@@ -27,7 +28,7 @@ export function FeedMap({ posts, mapboxAccessToken }: FeedMapProps) {
         bearing: 0,
     };
     
-    if (posts.length > 0) {
+    if (posts.length > 0 && !flyToPost) {
         const avgLat = posts.reduce((sum, post) => sum + post.latitude, 0) / posts.length;
         const avgLng = posts.reduce((sum, post) => sum + post.longitude, 0) / posts.length;
         initialViewState.latitude = avgLat;
@@ -35,9 +36,8 @@ export function FeedMap({ posts, mapboxAccessToken }: FeedMapProps) {
         initialViewState.zoom = posts.length > 1 ? 1 : 10;
     }
 
-    const handleMarkerClick = (post: KevinPost) => {
-        setSelectedPost(post);
-        mapRef.current?.flyTo({
+    const flyToLocation = (post: KevinPost) => {
+         mapRef.current?.flyTo({
             center: [post.longitude, post.latitude],
             zoom: 16,
             pitch: 60,
@@ -45,11 +45,24 @@ export function FeedMap({ posts, mapboxAccessToken }: FeedMapProps) {
         });
     };
 
+    useEffect(() => {
+        if (flyToPost && mapRef.current) {
+            setSelectedPost(flyToPost);
+            flyToLocation(flyToPost);
+        }
+    }, [flyToPost]);
+
+
+    const handleMarkerClick = (post: KevinPost) => {
+        setSelectedPost(post);
+        flyToLocation(post);
+    };
+
 
     return (
         <Map
             ref={mapRef}
-            initialViewState={initialViewState}
+            initialViewState={flyToPost ? undefined : initialViewState}
             style={{width: '100%', height: '100%'}}
             mapStyle="mapbox://styles/chavezzz8909/cmighf4qx003y01sth8iy07kz"
             mapboxAccessToken={mapboxAccessToken}
@@ -64,6 +77,13 @@ export function FeedMap({ posts, mapboxAccessToken }: FeedMapProps) {
             onLoad={(e) => {
                 const map = e.target;
                 map.setConfigProperty('basemap', 'show3dBuildings', true);
+                 if (flyToPost) {
+                    // Timeout to ensure map is fully loaded and ready for animation
+                    setTimeout(() => {
+                        setSelectedPost(flyToPost);
+                        flyToLocation(flyToPost);
+                    }, 500)
+                }
             }}
         >
             <NavigationControl position="top-right" />

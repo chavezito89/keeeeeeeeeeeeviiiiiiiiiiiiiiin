@@ -5,9 +5,10 @@ import { motion } from "framer-motion";
 
 interface FeedGridProps {
   posts: KevinPost[];
+  onViewOnMap: (post: KevinPost) => void;
 }
 
-export function FeedGrid({ posts }: FeedGridProps) {
+export function FeedGrid({ posts, onViewOnMap }: FeedGridProps) {
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -42,7 +43,7 @@ export function FeedGrid({ posts }: FeedGridProps) {
     >
       {posts.map((post) => (
         <motion.div key={post.id} variants={itemVariants} id={`post-${post.id}`}>
-          <PostCard post={post} />
+          <PostCard post={post} onViewOnMap={() => onViewOnMap(post)} />
         </motion.div>
       ))}
     </motion.div>

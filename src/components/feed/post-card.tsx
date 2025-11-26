@@ -19,6 +19,7 @@ import { FloatingHearts } from "./floating-hearts";
 
 interface PostCardProps {
   post: KevinPost;
+  onViewOnMap: () => void;
 }
 
 function LikeButton({ onLike, userHasLiked, likesCount, isDisabled }: { 
@@ -41,7 +42,7 @@ function LikeButton({ onLike, userHasLiked, likesCount, isDisabled }: {
     );
 }
 
-export function PostCard({ post }: PostCardProps) {
+export function PostCard({ post, onViewOnMap }: PostCardProps) {
   const { id, imageUrl, imageHint, comment, latitude, longitude, createdAt } = post;
   const [locationDetails, setLocationDetails] = useState<{ country: string, city: string, countryCode: string } | null>(null);
   const [comments, setComments] = useState<KevinComment[]>([]);
@@ -147,6 +148,7 @@ export function PostCard({ post }: PostCardProps) {
             longitude={longitude} 
             createdAt={createdAt} 
             onLocationDetails={setLocationDetails}
+            onViewOnMap={onViewOnMap}
           />
            <div className="flex items-center gap-1">
              <LikeButton 
@@ -187,6 +189,7 @@ export function PostCard({ post }: PostCardProps) {
                   longitude={longitude}
                   createdAt={createdAt}
                   onLocationDetails={() => {}}
+                  onViewOnMap={onViewOnMap}
                 />
               </div>
               <div className="flex-grow flex flex-col min-h-0">
@@ -203,5 +206,3 @@ export function PostCard({ post }: PostCardProps) {
     </Dialog>
   );
 }
-
-    
