@@ -9,7 +9,7 @@ import type { KevinPost } from "@/lib/types";
 async function getPosts(): Promise<KevinPost[]> {
   const { data, error } = await supabaseServer
     .from('posts')
-    .select('*')
+    .select('*, post_likes(username)')
     .order('created_at', { ascending: false });
 
   if (error) {
@@ -25,6 +25,7 @@ async function getPosts(): Promise<KevinPost[]> {
     latitude: post.latitude,
     longitude: post.longitude,
     createdAt: post.created_at,
+    post_likes: post.post_likes as { username: string }[],
   }));
 }
 

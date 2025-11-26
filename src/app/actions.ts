@@ -2,10 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import { addComment } from "@/lib/supabase/queries";
 import { supabaseServer } from "@/lib/supabase/server";
-import { supabase } from "@/lib/supabase/client";
-
 
 const postSchema = z.object({
     comment: z.string().max(500, "El comentario es demasiado largo.").optional(),
@@ -19,23 +16,6 @@ const commentSchema = z.object({
     username: z.string(),
     comment: z.string().min(1, "El comentario no puede estar vacío.").max(500, "El comentario es demasiado largo."),
 });
-
-async function uploadPostImage(file: File) {
-    const fileExt = file.name.split('.').pop();
-    const fileName = `${Math.random()}.${fileExt}`;
-    const filePath = `${fileName}`;
-
-    const { error: uploadError } = await supabaseServer.storage.from('posts').upload(filePath, file);
-
-    if (uploadError) {
-        console.error('Error uploading image:', uploadError);
-        throw new Error('Image upload failed.');
-    }
-
-    const { data } = supabase.storage.from('posts').getPublicUrl(filePath);
-
-    return data.publicUrl;
-}
 
 export async function createPost(formData: FormData) {
     const validatedFields = postSchema.safeParse({
@@ -52,7 +32,26 @@ export async function createPost(formData: FormData) {
     }
     
     try {
-        const imageUrl = await uploadPostImage(validatedFields.data.image);
+        const imageFile = validatedFields.data.image;
+        const fileExt = imageFile.name.split('.').pop();
+        const fileName = `${Math.random()}.${fileExt}`;
+        const filePath = `${fileName}`;
+
+        const { error: uploadError } = await supabaseServer.storage.from('posts').upload(filePath, imageFile);
+
+        if (uploadError) {
+            console.error('Error uploading image:', uploadError);
+            throw new Error('Image upload failed.');
+        }
+
+        const { data: publicUrlData } = supabaseServer.storage.from('posts').getPublicUrl(filePath);
+
+        if (!publicUrlData) {
+            throw new Error("Could not get public URL for the image.");
+        }
+        
+        const imageUrl = publicUrlData.publicUrl;
+
 
         const { error } = await supabaseServer
             .from('posts')
@@ -96,7 +95,7 @@ export async function createComment(formData: FormData) {
     }
 
     try {
-        const { error } = await supabase
+        const { error } = await supabaseServer
             .from('post_comments')
             .insert([{
                 post_id: validatedFields.data.postId,
@@ -110,7 +109,7 @@ export async function createComment(formData: FormData) {
         }
 
 
-        revalidatePath(`/feed`); // Could be more specific if we had post pages
+        revalidatePath(`/feed`);
         return { success: true };
     } catch (error) {
         const message = error instanceof Error ? error.message : "Ocurrió un error desconocido.";
@@ -118,5 +117,59 @@ export async function createComment(formData: FormData) {
             success: false,
             message: `No se pudo agregar el comentario: ${message}`
         }
+    }
+}
+
+const likeSchema = z.object({
+  postId: z.coerce.number(),
+  username: z.string(),
+});
+
+export async function toggleLike(formData: FormData) {
+    const validatedFields = likeSchema.safeParse({
+        postId: formData.get('postId'),
+        username: formData.get('username'),
+    });
+    
+    if (!validatedFields.success) {
+        return { error: 'Invalid input' };
+    }
+    
+    const { postId, username } = validatedFields.data;
+
+    // Check if the like exists
+    const { data: existingLike, error: selectError } = await supabaseServer
+        .from('post_likes')
+        .select('id')
+        .eq('post_id', postId)
+        .eq('username', username)
+        .single();
+    
+    if (selectError && selectError.code !== 'PGRST116') { // Ignore "exact one row" error
+        console.error('Error checking for like:', selectError);
+        return { error: "Database error when checking for like." };
+    }
+
+    try {
+        if (existingLike) {
+            // User has liked it, so unlike it
+            const { error: deleteError } = await supabaseServer
+                .from('post_likes')
+                .delete()
+                .eq('id', existingLike.id);
+            if (deleteError) throw deleteError;
+        } else {
+            // User has not liked it, so like it
+            const { error: insertError } = await supabaseServer
+                .from('post_likes')
+                .insert({ post_id: postId, username });
+            if (insertError) throw insertError;
+        }
+        revalidatePath('/feed');
+        return { success: true };
+
+    } catch (error) {
+        console.error("Error toggling like:", error);
+        return { error: "Could not update like status." };
     }
 }

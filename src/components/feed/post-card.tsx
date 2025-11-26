@@ -1,15 +1,17 @@
 "use client";
 
 import Image from "next/image";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useOptimistic } from "react";
 import type { KevinPost, KevinComment } from "@/lib/types";
 import { getComments } from "@/lib/supabase/queries";
+import { toggleLike } from "@/app/actions";
+import { KEVIN_USERNAME_KEY } from "@/lib/constants";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { LocationDisplay } from "./location-display";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { CommentSection } from "./comment-section";
 import { Button } from "../ui/button";
-import { MessageSquare, Forward, Clock } from "lucide-react";
+import { MessageSquare, Forward, Clock, Heart } from "lucide-react";
 import { formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
 
@@ -17,13 +19,48 @@ interface PostCardProps {
   post: KevinPost;
 }
 
+function LikeButton({ post, username }: { post: KevinPost; username: string | null }) {
+    const [optimisticLikes, toggleOptimisticLike] = useOptimistic(
+        post.post_likes,
+        (state, newLike: { username: string }) => {
+            const isLiked = state.some(like => like.username === newLike.username);
+            if (isLiked) {
+                return state.filter(like => like.username !== newLike.username);
+            } else {
+                return [...state, newLike];
+            }
+        }
+    );
+
+    const userHasLiked = optimisticLikes.some(like => like.username === username);
+
+    return (
+        <form action={async (formData) => {
+            if (!username) return;
+            toggleOptimisticLike({ username });
+            await toggleLike(formData);
+        }}>
+            <input type="hidden" name="postId" value={post.id} />
+            <input type="hidden" name="username" value={username || ''} />
+            <Button variant="ghost" size="sm" type="submit" disabled={!username} className="flex items-center gap-2 text-muted-foreground hover:text-primary flex-shrink-0">
+                <Heart className={`h-4 w-4 ${userHasLiked ? 'text-red-500 fill-current' : ''}`} />
+                <span>{optimisticLikes.length}</span>
+            </Button>
+        </form>
+    );
+}
+
 export function PostCard({ post }: PostCardProps) {
   const { id, imageUrl, imageHint, comment, latitude, longitude, createdAt } = post;
   const [locationDetails, setLocationDetails] = useState<{ country: string, city: string, countryCode: string } | null>(null);
   const [comments, setComments] = useState<KevinComment[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [username, setUsername] = useState<string | null>(null);
 
   useEffect(() => {
+    const storedUsername = localStorage.getItem(KEVIN_USERNAME_KEY);
+    setUsername(storedUsername);
+
     async function fetchComments() {
       const fetchedComments = await getComments(id);
       setComments(fetchedComments);
@@ -86,12 +123,15 @@ export function PostCard({ post }: PostCardProps) {
             createdAt={createdAt} 
             onLocationDetails={setLocationDetails}
           />
-           <DialogTrigger asChild>
-            <Button variant="ghost" size="sm" className="flex items-center gap-2 text-muted-foreground hover:text-primary flex-shrink-0">
-              <MessageSquare className="h-4 w-4"/>
-              <span>{comments.length}</span>
-            </Button>
-          </DialogTrigger>
+           <div className="flex items-center gap-1">
+             <LikeButton post={post} username={username} />
+             <DialogTrigger asChild>
+              <Button variant="ghost" size="sm" className="flex items-center gap-2 text-muted-foreground hover:text-primary flex-shrink-0">
+                <MessageSquare className="h-4 w-4"/>
+                <span>{comments.length}</span>
+              </Button>
+            </DialogTrigger>
+           </div>
         </CardFooter>
       </Card>
 
