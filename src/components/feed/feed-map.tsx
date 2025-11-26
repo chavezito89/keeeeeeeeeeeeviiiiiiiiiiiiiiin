@@ -1,8 +1,8 @@
 
 "use client";
 
-import { useState } from 'react';
-import Map, { Marker, Popup, NavigationControl } from 'react-map-gl';
+import { useState, useRef } from 'react';
+import Map, { Marker, Popup, NavigationControl, MapRef } from 'react-map-gl';
 import type { KevinPost } from '@/lib/types';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -17,12 +17,13 @@ interface FeedMapProps {
 
 export function FeedMap({ posts, mapboxAccessToken }: FeedMapProps) {
     const [selectedPost, setSelectedPost] = useState<KevinPost | null>(null);
+    const mapRef = useRef<MapRef>(null);
 
     const initialViewState = {
         longitude: -99.1332,
         latitude: 19.4326,
         zoom: 2,
-        pitch: 45, // Añadimos una inclinación inicial para la vista 3D
+        pitch: 45,
         bearing: 0,
     };
     
@@ -34,9 +35,20 @@ export function FeedMap({ posts, mapboxAccessToken }: FeedMapProps) {
         initialViewState.zoom = posts.length > 1 ? 1 : 10;
     }
 
+    const handleMarkerClick = (post: KevinPost) => {
+        setSelectedPost(post);
+        mapRef.current?.flyTo({
+            center: [post.longitude, post.latitude],
+            zoom: 14,
+            pitch: 60,
+            duration: 2000
+        });
+    };
+
 
     return (
         <Map
+            ref={mapRef}
             initialViewState={initialViewState}
             style={{width: '100%', height: '100%'}}
             mapStyle="mapbox://styles/chavezzz8909/cmighf4qx003y01sth8iy07kz"
@@ -52,7 +64,6 @@ export function FeedMap({ posts, mapboxAccessToken }: FeedMapProps) {
             onLoad={(e) => {
                 const map = e.target;
                 map.setConfigProperty('basemap', 'show3dBuildings', true);
-                map.setConfigProperty('basemap', 'show3dTrees', true);
             }}
         >
             <NavigationControl position="top-right" />
@@ -63,11 +74,11 @@ export function FeedMap({ posts, mapboxAccessToken }: FeedMapProps) {
                     latitude={post.latitude}
                     onClick={(e) => {
                         e.originalEvent.stopPropagation();
-                        setSelectedPost(post);
+                        handleMarkerClick(post);
                     }}
                 >
-                    <button type="button" className="cursor-pointer">
-                        <Pin className="h-8 w-8 text-primary fill-primary/70" />
+                    <button type="button" className="cursor-pointer transform transition-transform hover:scale-110">
+                        <Pin className="h-8 w-8 text-primary fill-primary/70" style={{filter: 'drop-shadow(0 4px 6px rgba(0,0,0,0.3))'}} />
                     </button>
                 </Marker>
             ))}
@@ -86,7 +97,7 @@ export function FeedMap({ posts, mapboxAccessToken }: FeedMapProps) {
                             <Image src={selectedPost.imageUrl} alt={selectedPost.comment || "Sighting of Kevin"} fill className="object-cover" />
                         </div>
                         {selectedPost.comment && <p className="text-xs mb-2 truncate">{selectedPost.comment}</p>}
-                        <Link href={`#post-${post.id}`} passHref>
+                        <Link href={`/feed#post-${selectedPost.id}`} passHref>
                             <Button size="sm" className="w-full">Ver detalle</Button>
                         </Link>
                     </div>
