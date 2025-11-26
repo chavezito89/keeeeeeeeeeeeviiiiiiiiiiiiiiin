@@ -149,7 +149,7 @@ export function PostCard({ post, onViewOnMap }: PostCardProps) {
                 onLocationDetails={setLocationDetails}
                 onViewOnMap={onViewOnMap}
             />
-           <div className="flex items-center gap-1">
+           <div className="flex items-center gap-1 flex-shrink-0">
              <LikeButton 
                 onLike={handleLike}
                 userHasLiked={userHasLiked}
