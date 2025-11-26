@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from 'react';
@@ -21,6 +22,8 @@ export function FeedMap({ posts, mapboxAccessToken }: FeedMapProps) {
         longitude: -99.1332,
         latitude: 19.4326,
         zoom: 2,
+        pitch: 45, // Añadimos una inclinación inicial para la vista 3D
+        bearing: 0,
     };
     
     if (posts.length > 0) {
