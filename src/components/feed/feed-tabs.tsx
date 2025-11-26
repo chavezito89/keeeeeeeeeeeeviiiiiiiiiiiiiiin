@@ -4,13 +4,6 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { FeedGrid } from "./feed-grid";
 import type { KevinPost } from "@/lib/types";
-import dynamic from 'next/dynamic';
-import { Skeleton } from "@/components/ui/skeleton";
-
-const FeedMap = dynamic(() => import('./feed-map').then(mod => mod.FeedMap), {
-  ssr: false,
-  loading: () => <Skeleton className="h-[500px] w-full" />,
-});
 
 interface FeedTabsProps {
     posts: KevinPost[];
@@ -27,8 +20,8 @@ export function FeedTabs({ posts }: FeedTabsProps) {
                 <FeedGrid posts={posts} />
             </TabsContent>
             <TabsContent value="mapa">
-                <div className="aspect-[4/3] md:aspect-video w-full rounded-lg overflow-hidden border">
-                    <FeedMap posts={posts} />
+                <div className="aspect-[4/3] md:aspect-video w-full rounded-lg border bg-muted flex items-center justify-center">
+                    <p className="text-muted-foreground">El mapa de Kevin estará disponible próximamente.</p>
                 </div>
             </TabsContent>
         </Tabs>
