@@ -39,7 +39,7 @@ export function FeedMap({ posts, mapboxAccessToken }: FeedMapProps) {
         <Map
             initialViewState={initialViewState}
             style={{width: '100%', height: '100%'}}
-            mapStyle="mapbox://styles/mapbox/streets-v12"
+            mapStyle="mapbox://styles/chavezzz8909/cmighf4qx003y01sth8iy07kz"
             mapboxAccessToken={mapboxAccessToken}
             fog={{
                 "range": [0.8, 8],
@@ -86,7 +86,7 @@ export function FeedMap({ posts, mapboxAccessToken }: FeedMapProps) {
                             <Image src={selectedPost.imageUrl} alt={selectedPost.comment || "Sighting of Kevin"} fill className="object-cover" />
                         </div>
                         {selectedPost.comment && <p className="text-xs mb-2 truncate">{selectedPost.comment}</p>}
-                        <Link href={`#post-${selectedPost.id}`} passHref>
+                        <Link href={`#post-${post.id}`} passHref>
                             <Button size="sm" className="w-full">Ver detalle</Button>
                         </Link>
                     </div>
