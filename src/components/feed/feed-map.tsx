@@ -5,8 +5,6 @@ import { useState, useRef, useEffect } from 'react';
 import Map, { Marker, Popup, NavigationControl, MapRef } from 'react-map-gl';
 import type { KevinPost } from '@/lib/types';
 import Image from 'next/image';
-import Link from 'next/link';
-import { Button } from '../ui/button';
 import { Pin } from 'lucide-react';
 
 
@@ -112,14 +110,9 @@ export function FeedMap({ posts, mapboxAccessToken, flyToPost }: FeedMapProps) {
                     closeOnClick={false}
                     offset={35}
                 >
-                    <div className="w-48 rounded-md overflow-hidden">
-                        <Image src={selectedPost.imageUrl} alt={selectedPost.comment || "Sighting of Kevin"} width={192} height={144} className="object-cover mb-2 rounded-t-md" />
+                    <div className="w-48 rounded-md overflow-hidden pb-1">
+                        <Image src={selectedPost.imageUrl} alt={selectedPost.comment || "Sighting of Kevin"} width={192} height={144} className="object-cover mb-2" />
                         {selectedPost.comment && <p className="text-xs mb-2 px-1 truncate">{selectedPost.comment}</p>}
-                        <div className="px-1 pb-1">
-                            <Link href={`/feed#post-${selectedPost.id}`} passHref>
-                                <Button size="sm" className="w-full">Ver detalle</Button>
-                            </Link>
-                        </div>
                     </div>
                 </Popup>
             )}
