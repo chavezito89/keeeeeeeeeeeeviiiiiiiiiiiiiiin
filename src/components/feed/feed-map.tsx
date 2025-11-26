@@ -39,7 +39,7 @@ export function FeedMap({ posts, mapboxAccessToken }: FeedMapProps) {
         setSelectedPost(post);
         mapRef.current?.flyTo({
             center: [post.longitude, post.latitude],
-            zoom: 14,
+            zoom: 16,
             pitch: 60,
             duration: 2000
         });
