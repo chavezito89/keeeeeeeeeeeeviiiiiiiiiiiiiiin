@@ -1,7 +1,8 @@
+
 "use client";
 
 import Image from "next/image";
-import { useState, useEffect, useOptimistic } from "react";
+import { useState, useEffect, useOptimistic, useTransition } from "react";
 import type { KevinPost, KevinComment } from "@/lib/types";
 import { getComments } from "@/lib/supabase/queries";
 import { toggleLike } from "@/app/actions";
@@ -47,6 +48,7 @@ export function PostCard({ post }: PostCardProps) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [username, setUsername] = useState<string | null>(null);
   const [heartTrigger, setHeartTrigger] = useState(0);
+  const [isPending, startTransition] = useTransition();
 
    const [optimisticLikes, toggleOptimisticLike] = useOptimistic(
     post.post_likes,
@@ -71,20 +73,21 @@ export function PostCard({ post }: PostCardProps) {
     fetchComments();
   }, [id]);
 
-  const handleLike = async () => {
+  const handleLike = () => {
     if (!username) return;
 
-    const isLiking = !optimisticLikes.some(like => like.username === username);
-    if(isLiking) {
-        setHeartTrigger(prev => prev + 1);
-    }
-    
-    toggleOptimisticLike(username);
+    startTransition(() => {
+        const isLiking = !optimisticLikes.some(like => like.username === username);
+        if(isLiking) {
+            setHeartTrigger(prev => prev + 1);
+        }
+        toggleOptimisticLike(username);
+    });
 
     const formData = new FormData();
     formData.append('postId', post.id.toString());
     formData.append('username', username);
-    await toggleLike(formData);
+    toggleLike(formData);
   };
 
   const flagUrl = locationDetails?.countryCode ? `https://flagcdn.com/w40/${locationDetails.countryCode.toLowerCase()}.png` : null;
@@ -150,7 +153,7 @@ export function PostCard({ post }: PostCardProps) {
                 onLike={handleLike}
                 userHasLiked={userHasLiked}
                 likesCount={optimisticLikes.length}
-                isDisabled={!username}
+                isDisabled={!username || isPending}
              />
              <DialogTrigger asChild>
               <Button variant="ghost" size="sm" className="flex items-center gap-2 text-muted-foreground hover:text-primary flex-shrink-0">
@@ -200,3 +203,5 @@ export function PostCard({ post }: PostCardProps) {
     </Dialog>
   );
 }
+
+    
