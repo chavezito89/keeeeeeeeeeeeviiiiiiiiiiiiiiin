@@ -11,9 +11,10 @@ import { FeedTabs } from "./feed-tabs";
 
 interface FeedClientProps {
   posts: KevinPost[];
+  mapboxToken?: string;
 }
 
-export function FeedClient({ posts }: FeedClientProps) {
+export function FeedClient({ posts, mapboxToken }: FeedClientProps) {
   const [username, setUsername] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
@@ -47,7 +48,7 @@ export function FeedClient({ posts }: FeedClientProps) {
       >
         ¡Bienvenido, <span className="text-primary">{username}</span>!
       </motion.h1>
-      <FeedTabs posts={posts} />
+      <FeedTabs posts={posts} mapboxToken={mapboxToken} />
     </div>
   );
 }

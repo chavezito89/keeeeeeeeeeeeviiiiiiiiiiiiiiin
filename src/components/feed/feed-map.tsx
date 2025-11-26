@@ -11,9 +11,10 @@ import { Pin } from 'lucide-react';
 
 interface FeedMapProps {
     posts: KevinPost[];
+    mapboxAccessToken?: string;
 }
 
-export function FeedMap({ posts }: FeedMapProps) {
+export function FeedMap({ posts, mapboxAccessToken }: FeedMapProps) {
     const [selectedPost, setSelectedPost] = useState<KevinPost | null>(null);
 
     const initialViewState = {
@@ -36,7 +37,7 @@ export function FeedMap({ posts }: FeedMapProps) {
             initialViewState={initialViewState}
             style={{width: '100%', height: '100%'}}
             mapStyle="mapbox://styles/mapbox/streets-v12"
-            mapboxAccessToken={process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN}
+            mapboxAccessToken={mapboxAccessToken}
         >
             <NavigationControl position="top-right" />
             {posts.map(post => (

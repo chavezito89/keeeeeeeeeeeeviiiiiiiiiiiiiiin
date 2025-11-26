@@ -3,13 +3,13 @@
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { FeedGrid } from "./feed-grid";
-import { FeedMap } from "./feed-map";
 import type { KevinPost } from "@/lib/types";
 import dynamic from 'next/dynamic';
 import { Skeleton } from "../ui/skeleton";
 
 interface FeedTabsProps {
     posts: KevinPost[];
+    mapboxToken?: string;
 }
 
 const DynamicFeedMap = dynamic(() => import('./feed-map').then(mod => mod.FeedMap), {
@@ -18,7 +18,7 @@ const DynamicFeedMap = dynamic(() => import('./feed-map').then(mod => mod.FeedMa
 });
 
 
-export function FeedTabs({ posts }: FeedTabsProps) {
+export function FeedTabs({ posts, mapboxToken }: FeedTabsProps) {
     return (
         <Tabs defaultValue="grid" className="w-full">
             <TabsList className="grid w-full grid-cols-2 max-w-sm mx-auto mb-6">
@@ -30,7 +30,7 @@ export function FeedTabs({ posts }: FeedTabsProps) {
             </TabsContent>
             <TabsContent value="mapa">
                 <div className="aspect-[4/3] md:aspect-video w-full rounded-lg border bg-muted flex items-center justify-center overflow-hidden">
-                    <DynamicFeedMap posts={posts} />
+                    <DynamicFeedMap posts={posts} mapboxAccessToken={mapboxToken} />
                 </div>
             </TabsContent>
         </Tabs>

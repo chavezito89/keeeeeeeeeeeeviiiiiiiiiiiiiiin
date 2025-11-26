@@ -48,13 +48,14 @@ function FeedSkeleton() {
 
 export default async function FeedPage() {
   const posts = await getPosts();
+  const mapboxToken = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN;
 
   return (
     <div className="flex flex-col min-h-screen">
       <AppHeader />
       <main className="flex-1">
         <Suspense fallback={<FeedSkeleton />}>
-            <FeedClient posts={posts} />
+            <FeedClient posts={posts} mapboxToken={mapboxToken} />
         </Suspense>
       </main>
     </div>
