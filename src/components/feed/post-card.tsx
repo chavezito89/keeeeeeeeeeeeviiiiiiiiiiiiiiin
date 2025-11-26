@@ -1,4 +1,3 @@
-
 "use client";
 
 import Image from "next/image";
@@ -142,14 +141,14 @@ export function PostCard({ post, onViewOnMap }: PostCardProps) {
             </div>
           )}
         </CardContent>
-        <CardFooter className="p-4 bg-secondary/30 flex justify-between items-center gap-2">
+        <CardFooter className="p-4 bg-secondary/30 grid grid-cols-[1fr_auto] items-center gap-2">
             <LocationDisplay 
                 latitude={latitude} 
                 longitude={longitude} 
                 onLocationDetails={setLocationDetails}
                 onViewOnMap={onViewOnMap}
             />
-           <div className="flex items-center gap-1 flex-shrink-0">
+           <div className="flex items-center gap-1">
              <LikeButton 
                 onLike={handleLike}
                 userHasLiked={userHasLiked}
@@ -157,7 +156,7 @@ export function PostCard({ post, onViewOnMap }: PostCardProps) {
                 isDisabled={!username || isPending}
              />
              <DialogTrigger asChild>
-              <Button variant="ghost" size="sm" className="flex items-center gap-2 text-muted-foreground hover:text-primary flex-shrink-0">
+              <Button variant="ghost" size="sm" className="flex items-center gap-2 text-muted-foreground hover:text-primary">
                 <MessageSquare className="h-4 w-4"/>
                 <span>{comments.length}</span>
               </Button>

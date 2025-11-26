@@ -46,10 +46,10 @@ export function LocationDisplay({ latitude, longitude, onLocationDetails, onView
     }, [latitude, longitude]);
 
     return (
-        <div className="flex-1 min-w-0">
+        <div className="overflow-hidden">
             <Button variant="link" onClick={onViewOnMap} className="flex items-start gap-2 group/link p-0 h-auto text-left">
                 <MapPin className="w-4 h-4 text-primary flex-shrink-0 mt-1" />
-                <div className="flex-1 min-w-0">
+                <div className="min-w-0">
                     {isLoading ? (
                          <div className="flex items-center gap-2">
                             <Loader2 className="w-4 h-4 animate-spin"/>
