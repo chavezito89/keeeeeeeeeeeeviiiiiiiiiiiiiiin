@@ -92,14 +92,14 @@ export function FeedMap({ posts, mapboxAccessToken }: FeedMapProps) {
                     closeOnClick={false}
                     offset={35}
                 >
-                    <div className="w-48">
-                        <div className="relative aspect-4/3 mb-2 rounded-md overflow-hidden">
-                            <Image src={selectedPost.imageUrl} alt={selectedPost.comment || "Sighting of Kevin"} fill className="object-cover" />
+                    <div className="w-48 rounded-md overflow-hidden">
+                        <Image src={selectedPost.imageUrl} alt={selectedPost.comment || "Sighting of Kevin"} width={192} height={144} className="object-cover mb-2 rounded-t-md" />
+                        {selectedPost.comment && <p className="text-xs mb-2 px-1 truncate">{selectedPost.comment}</p>}
+                        <div className="px-1 pb-1">
+                            <Link href={`/feed#post-${selectedPost.id}`} passHref>
+                                <Button size="sm" className="w-full">Ver detalle</Button>
+                            </Link>
                         </div>
-                        {selectedPost.comment && <p className="text-xs mb-2 truncate">{selectedPost.comment}</p>}
-                        <Link href={`/feed#post-${selectedPost.id}`} passHref>
-                            <Button size="sm" className="w-full">Ver detalle</Button>
-                        </Link>
                     </div>
                 </Popup>
             )}
