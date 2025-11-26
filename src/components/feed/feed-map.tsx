@@ -41,6 +41,19 @@ export function FeedMap({ posts, mapboxAccessToken }: FeedMapProps) {
             style={{width: '100%', height: '100%'}}
             mapStyle="mapbox://styles/mapbox/streets-v12"
             mapboxAccessToken={mapboxAccessToken}
+            fog={{
+                "range": [0.8, 8],
+                "color": "#dc9f9f",
+                "horizon-blend": 0.5,
+                "high-color": "#245bde",
+                "space-color": "#000000",
+                "star-intensity": 0.15
+            }}
+            onLoad={(e) => {
+                const map = e.target;
+                map.setConfigProperty('basemap', 'show3dBuildings', true);
+                map.setConfigProperty('basemap', 'show3dTrees', true);
+            }}
         >
             <NavigationControl position="top-right" />
             {posts.map(post => (
