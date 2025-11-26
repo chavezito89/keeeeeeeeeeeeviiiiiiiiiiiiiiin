@@ -1,66 +1,80 @@
-
 "use client";
 
-import L, { Icon } from 'leaflet';
-import 'leaflet/dist/leaflet.css';
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import { useState } from 'react';
+import Map, { Marker, Popup, NavigationControl } from 'react-map-gl';
 import type { KevinPost } from '@/lib/types';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Button } from '../ui/button';
+import { Pin } from 'lucide-react';
 
-// Fix for default icon issues with webpack
-const customIcon = new Icon({
-    iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
-    iconSize: [25, 41],
-    iconAnchor: [12, 41],
-    popupAnchor: [1, -34],
-    shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
-    shadowSize: [41, 41]
-});
 
 interface FeedMapProps {
     posts: KevinPost[];
 }
 
 export function FeedMap({ posts }: FeedMapProps) {
-    if (posts.length === 0) {
-        return (
-            <MapContainer center={[20, 0]} zoom={2} scrollWheelZoom={true} className="h-full w-full">
-                <TileLayer
-                    attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                />
-            </MapContainer>
-        )
-    }
+    const [selectedPost, setSelectedPost] = useState<KevinPost | null>(null);
+
+    const initialViewState = {
+        longitude: -99.1332,
+        latitude: 19.4326,
+        zoom: 2,
+    };
     
-    // Calculate the center of all posts
-    const avgLat = posts.reduce((sum, post) => sum + post.latitude, 0) / posts.length;
-    const avgLng = posts.reduce((sum, post) => sum + post.longitude, 0) / posts.length;
-    const center: [number, number] = [avgLat, avgLng];
+    if (posts.length > 0) {
+        const avgLat = posts.reduce((sum, post) => sum + post.latitude, 0) / posts.length;
+        const avgLng = posts.reduce((sum, post) => sum + post.longitude, 0) / posts.length;
+        initialViewState.latitude = avgLat;
+        initialViewState.longitude = avgLng;
+        initialViewState.zoom = posts.length > 1 ? 1 : 10;
+    }
+
 
     return (
-        <MapContainer center={center} zoom={posts.length > 1 ? 2 : 10} scrollWheelZoom={true} className="h-full w-full">
-            <TileLayer
-                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-            />
+        <Map
+            initialViewState={initialViewState}
+            style={{width: '100%', height: '100%'}}
+            mapStyle="mapbox://styles/mapbox/streets-v12"
+            mapboxAccessToken={process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN}
+        >
+            <NavigationControl position="top-right" />
             {posts.map(post => (
-                <Marker key={post.id} position={[post.latitude, post.longitude]} icon={customIcon}>
-                    <Popup>
-                        <div className="w-48">
-                            <div className="relative aspect-4/3 mb-2 rounded-md overflow-hidden">
-                                <Image src={post.imageUrl} alt={post.comment || "Sighting of Kevin"} fill className="object-cover" />
-                            </div>
-                            {post.comment && <p className="text-xs mb-2 truncate">{post.comment}</p>}
-                            <Link href={`#post-${post.id}`} passHref>
-                                <Button size="sm" className="w-full">Ver detalle</Button>
-                            </Link>
-                        </div>
-                    </Popup>
+                <Marker 
+                    key={post.id} 
+                    longitude={post.longitude} 
+                    latitude={post.latitude}
+                    onClick={(e) => {
+                        e.originalEvent.stopPropagation();
+                        setSelectedPost(post);
+                    }}
+                >
+                    <button type="button" className="cursor-pointer">
+                        <Pin className="h-8 w-8 text-primary fill-primary/70" />
+                    </button>
                 </Marker>
             ))}
-        </MapContainer>
+
+            {selectedPost && (
+                <Popup
+                    longitude={selectedPost.longitude}
+                    latitude={selectedPost.latitude}
+                    onClose={() => setSelectedPost(null)}
+                    anchor="bottom"
+                    closeOnClick={false}
+                    offset={35}
+                >
+                    <div className="w-48">
+                        <div className="relative aspect-4/3 mb-2 rounded-md overflow-hidden">
+                            <Image src={selectedPost.imageUrl} alt={selectedPost.comment || "Sighting of Kevin"} fill className="object-cover" />
+                        </div>
+                        {selectedPost.comment && <p className="text-xs mb-2 truncate">{selectedPost.comment}</p>}
+                        <Link href={`#post-${selectedPost.id}`} passHref>
+                            <Button size="sm" className="w-full">Ver detalle</Button>
+                        </Link>
+                    </div>
+                </Popup>
+            )}
+        </Map>
     );
 }
