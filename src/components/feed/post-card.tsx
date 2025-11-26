@@ -20,38 +20,23 @@ interface PostCardProps {
   post: KevinPost;
 }
 
-function LikeButton({ post, username, onLike }: { post: KevinPost; username: string | null, onLike: () => void }) {
-    const [optimisticLikes, toggleOptimisticLike] = useOptimistic(
-        post.post_likes,
-        (state, newLike: { username: string }) => {
-            const isLiked = state.some(like => like.username === newLike.username);
-            if (isLiked) {
-                return state.filter(like => like.username !== newLike.username);
-            } else {
-                return [...state, newLike];
-            }
-        }
-    );
-
-    const userHasLiked = optimisticLikes.some(like => like.username === username);
-
+function LikeButton({ onLike, userHasLiked, likesCount, isDisabled }: { 
+    onLike: () => void; 
+    userHasLiked: boolean;
+    likesCount: number;
+    isDisabled: boolean;
+}) {
     return (
-        <form action={async (formData) => {
-            if (!username) return;
-            const isLiking = !userHasLiked;
-            toggleOptimisticLike({ username });
-            if(isLiking) {
-                onLike();
-            }
-            await toggleLike(formData);
-        }}>
-            <input type="hidden" name="postId" value={post.id} />
-            <input type="hidden" name="username" value={username || ''} />
-            <Button variant="ghost" size="sm" type="submit" disabled={!username} className="flex items-center gap-2 text-muted-foreground hover:text-primary flex-shrink-0">
-                <Heart className={`h-4 w-4 ${userHasLiked ? 'text-red-500 fill-current' : ''}`} />
-                <span>{optimisticLikes.length}</span>
-            </Button>
-        </form>
+        <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={onLike} 
+            disabled={isDisabled} 
+            className="flex items-center gap-2 text-muted-foreground hover:text-primary flex-shrink-0"
+        >
+            <Heart className={`h-4 w-4 ${userHasLiked ? 'text-red-500 fill-current' : ''}`} />
+            <span>{likesCount}</span>
+        </Button>
     );
 }
 
@@ -62,6 +47,18 @@ export function PostCard({ post }: PostCardProps) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [username, setUsername] = useState<string | null>(null);
   const [heartTrigger, setHeartTrigger] = useState(0);
+
+   const [optimisticLikes, toggleOptimisticLike] = useOptimistic(
+    post.post_likes,
+    (state, newLikeUsername: string) => {
+        const isLiked = state.some(like => like.username === newLikeUsername);
+        if (isLiked) {
+            return state.filter(like => like.username !== newLikeUsername);
+        } else {
+            return [...state, { username: newLikeUsername }];
+        }
+    }
+  );
 
   useEffect(() => {
     const storedUsername = localStorage.getItem(KEVIN_USERNAME_KEY);
@@ -74,13 +71,27 @@ export function PostCard({ post }: PostCardProps) {
     fetchComments();
   }, [id]);
 
-  const handleLike = () => {
-    setHeartTrigger(prev => prev + 1);
+  const handleLike = async () => {
+    if (!username) return;
+
+    const isLiking = !optimisticLikes.some(like => like.username === username);
+    if(isLiking) {
+        setHeartTrigger(prev => prev + 1);
+    }
+    
+    toggleOptimisticLike(username);
+
+    const formData = new FormData();
+    formData.append('postId', post.id.toString());
+    formData.append('username', username);
+    await toggleLike(formData);
   };
 
   const flagUrl = locationDetails?.countryCode ? `https://flagcdn.com/w40/${locationDetails.countryCode.toLowerCase()}.png` : null;
   const latestComment = comments.length > 0 ? comments[comments.length - 1] : null;
   const formattedDate = formatDistanceToNow(new Date(createdAt), { addSuffix: true, locale: es });
+  const userHasLiked = optimisticLikes.some(like => like.username === username);
+
 
   return (
     <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
@@ -135,7 +146,12 @@ export function PostCard({ post }: PostCardProps) {
             onLocationDetails={setLocationDetails}
           />
            <div className="flex items-center gap-1">
-             <LikeButton post={post} username={username} onLike={handleLike} />
+             <LikeButton 
+                onLike={handleLike}
+                userHasLiked={userHasLiked}
+                likesCount={optimisticLikes.length}
+                isDisabled={!username}
+             />
              <DialogTrigger asChild>
               <Button variant="ghost" size="sm" className="flex items-center gap-2 text-muted-foreground hover:text-primary flex-shrink-0">
                 <MessageSquare className="h-4 w-4"/>
