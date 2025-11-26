@@ -143,13 +143,12 @@ export function PostCard({ post, onViewOnMap }: PostCardProps) {
           )}
         </CardContent>
         <CardFooter className="p-4 bg-secondary/30 flex justify-between items-center gap-2">
-          <LocationDisplay 
-            latitude={latitude} 
-            longitude={longitude} 
-            createdAt={createdAt} 
-            onLocationDetails={setLocationDetails}
-            onViewOnMap={onViewOnMap}
-          />
+            <LocationDisplay 
+                latitude={latitude} 
+                longitude={longitude} 
+                onLocationDetails={setLocationDetails}
+                onViewOnMap={onViewOnMap}
+            />
            <div className="flex items-center gap-1">
              <LikeButton 
                 onLike={handleLike}
@@ -187,7 +186,6 @@ export function PostCard({ post, onViewOnMap }: PostCardProps) {
                 <LocationDisplay
                   latitude={latitude}
                   longitude={longitude}
-                  createdAt={createdAt}
                   onLocationDetails={() => {}}
                   onViewOnMap={onViewOnMap}
                 />
