@@ -1,9 +1,10 @@
+
 "use client";
 
 import { useEffect, useRef, useState } from 'react';
 import L, { LatLngExpression, Icon, Map } from 'leaflet';
 import { Label } from '@/components/ui/label';
-import { Loader2, MapPin, LocateFixed } from 'lucide-react';
+import { Loader2, MapPin } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 
@@ -138,17 +139,6 @@ export function LocationPicker() {
             <p className="text-sm text-muted-foreground">Haz clic en el mapa para marcar el punto exacto.</p>
             <div className="relative">
                 <div ref={containerRef} className="h-64 w-full rounded-md overflow-hidden border bg-muted" tabIndex={-1} />
-                <Button 
-                    type="button" 
-                    variant="secondary" 
-                    size="icon" 
-                    onClick={centerOnUserLocation}
-                    className="absolute top-2 right-2 z-[1000] shadow-md"
-                    aria-label="Usar mi ubicación actual"
-                    disabled={isGettingLocation}
-                >
-                    {isGettingLocation ? <Loader2 className="h-5 w-5 animate-spin" /> : <LocateFixed className="h-5 w-5" />}
-                </Button>
             </div>
             {isGettingLocation && (
                 <p className="text-sm text-muted-foreground text-center flex items-center justify-center gap-2">
