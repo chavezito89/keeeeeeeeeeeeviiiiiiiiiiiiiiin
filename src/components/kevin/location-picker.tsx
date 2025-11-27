@@ -1,59 +1,39 @@
-
 "use client";
 
-import { useEffect, useRef, useState } from 'react';
-import L, { LatLngExpression, Icon, Map } from 'leaflet';
+import { useEffect, useRef, useState, useCallback } from 'react';
+import Map, { Marker, NavigationControl, MapRef } from 'react-map-gl';
 import { Label } from '@/components/ui/label';
-import { Loader2, MapPin } from 'lucide-react';
+import { Loader2, MapPin, LocateFixed } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 
-const customIcon = new Icon({
-    iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
-    iconSize: [25, 41],
-    iconAnchor: [12, 41],
-    popupAnchor: [1, -34],
-    shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
-    shadowSize: [41, 41]
-});
+interface LocationPickerProps {
+    mapboxToken?: string;
+}
 
-export function LocationPicker() {
+export function LocationPicker({ mapboxToken }: LocationPickerProps) {
     const { toast } = useToast();
     const [isGettingLocation, setIsGettingLocation] = useState(false);
-    
-    const mapRef = useRef<Map | null>(null);
-    const markerRef = useRef<L.Marker | null>(null);
-    const containerRef = useRef<HTMLDivElement | null>(null);
+    const [marker, setMarker] = useState<{ latitude: number, longitude: number } | null>(null);
 
-    const [selectedCoords, setSelectedCoords] = useState<string>("");
+    const mapRef = useRef<MapRef | null>(null);
 
-    const updateHiddenInputs = (lat: number | null, lng: number | null) => {
+    const updateHiddenInputs = useCallback((lat: number | null, lng: number | null) => {
         const latInput = document.querySelector('input[name="latitude"]') as HTMLInputElement;
         const lonInput = document.querySelector('input[name="longitude"]') as HTMLInputElement;
         if (latInput && lonInput) {
             latInput.value = lat?.toString() || '';
             lonInput.value = lng?.toString() || '';
         }
-        if (lat && lng) {
-            setSelectedCoords(`${lat.toFixed(4)}, ${lng.toFixed(4)}`);
-        } else {
-            setSelectedCoords("");
-        }
-    };
+    }, []);
 
-    const handleMapClick = (e: L.LeafletMouseEvent) => {
-        const { lat, lng } = e.latlng;
-        if (mapRef.current) {
-            if (markerRef.current) {
-                markerRef.current.setLatLng(e.latlng);
-            } else {
-                markerRef.current = L.marker(e.latlng, { icon: customIcon }).addTo(mapRef.current);
-            }
-        }
+    const handleMapClick = (e: mapboxgl.MapLayerMouseEvent) => {
+        const { lng, lat } = e.lngLat;
+        setMarker({ latitude: lat, longitude: lng });
         updateHiddenInputs(lat, lng);
     };
 
-    const centerOnUserLocation = () => {
+    const centerOnUserLocation = useCallback(() => {
         if (!navigator.geolocation) {
              toast({
                 variant: "destructive",
@@ -66,17 +46,14 @@ export function LocationPicker() {
         navigator.geolocation.getCurrentPosition(
             (position) => {
                 const { latitude, longitude } = position.coords;
-                const newPosition: LatLngExpression = [latitude, longitude];
-                
-                if (mapRef.current) {
-                    mapRef.current.setView(newPosition, 13);
-                     if (markerRef.current) {
-                        markerRef.current.setLatLng(newPosition);
-                    } else {
-                        markerRef.current = L.marker(newPosition, { icon: customIcon }).addTo(mapRef.current);
-                    }
-                }
+                setMarker({ latitude, longitude });
                 updateHiddenInputs(latitude, longitude);
+                
+                mapRef.current?.flyTo({
+                    center: [longitude, latitude],
+                    zoom: 14,
+                    pitch: 45,
+                });
                 setIsGettingLocation(false);
             },
             (error) => {
@@ -89,65 +66,73 @@ export function LocationPicker() {
             },
             { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
         );
-    };
+    }, [toast, updateHiddenInputs]);
 
-    const handleReset = () => {
-         if (mapRef.current) {
-            mapRef.current.setView([20, 0], 2);
-            if (markerRef.current) {
-                markerRef.current.remove();
-                markerRef.current = null;
-            }
-         }
+    const handleReset = useCallback(() => {
+         mapRef.current?.flyTo({
+            center: [-99.1332, 19.4326], // Mexico City
+            zoom: 2,
+            pitch: 0,
+         });
+         setMarker(null);
          updateHiddenInputs(null, null);
-    }
+    }, [updateHiddenInputs])
     
     useEffect(() => {
-        if (!containerRef.current || mapRef.current) return;
-
-        const map = L.map(containerRef.current, {
-            center: [20, 0],
-            zoom: 2,
-            scrollWheelZoom: false,
-        });
-
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; OpenStreetMap contributors',
-        }).addTo(map);
-
-        map.on('click', handleMapClick);
-
-        mapRef.current = map;
-        
-        centerOnUserLocation(); // Intentar obtener ubicación al inicio
-
+        centerOnUserLocation();
         window.addEventListener('resetMap', handleReset);
-
         return () => {
-            if (mapRef.current) {
-                mapRef.current.remove();
-                mapRef.current = null;
-            }
             window.removeEventListener('resetMap', handleReset);
         };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    }, [centerOnUserLocation, handleReset]);
+    
+    const initialViewState = {
+        longitude: -99.1332,
+        latitude: 19.4326,
+        zoom: 2,
+        pitch: 0,
+        bearing: 0,
+    };
 
     return (
         <div className="space-y-2">
-            <Label className="flex items-center gap-2"><MapPin className="h-4 w-4"/> Ubicación del avistamiento</Label>
-            <p className="text-sm text-muted-foreground">Haz clic en el mapa para marcar el punto exacto.</p>
-            <div className="relative">
-                <div ref={containerRef} className="h-64 w-full rounded-md overflow-hidden border bg-muted" tabIndex={-1} />
+            <div className="flex justify-between items-center">
+                <div>
+                    <Label className="flex items-center gap-2"><MapPin className="h-4 w-4"/> Ubicación del avistamiento</Label>
+                    <p className="text-sm text-muted-foreground">Haz clic en el mapa para marcar el punto exacto.</p>
+                </div>
+                <Button variant="outline" size="sm" onClick={centerOnUserLocation} disabled={isGettingLocation}>
+                    {isGettingLocation ? <Loader2 className="h-4 w-4 animate-spin"/> : <LocateFixed className="h-4 w-4"/>}
+                    <span className="ml-2 hidden sm:inline">Usar mi ubicación</span>
+                </Button>
             </div>
-            {isGettingLocation && (
-                <p className="text-sm text-muted-foreground text-center flex items-center justify-center gap-2">
-                    <Loader2 className="h-4 w-4 animate-spin" /> Obteniendo ubicación...
-                </p>
-            )}
-            {selectedCoords && !isGettingLocation && (
+            <div className="relative h-80 w-full rounded-md overflow-hidden border bg-muted">
+                {mapboxToken ? (
+                     <Map
+                        ref={mapRef}
+                        mapboxAccessToken={mapboxToken}
+                        initialViewState={initialViewState}
+                        style={{width: '100%', height: '100%'}}
+                        mapStyle="mapbox://styles/chavezzz8909/cmighf4qx003y01sth8iy07kz"
+                        onClick={handleMapClick}
+                        cursor='crosshair'
+                     >
+                        <NavigationControl position="top-right" />
+                        {marker && (
+                            <Marker longitude={marker.longitude} latitude={marker.latitude}>
+                                 <Pin className="h-8 w-8 text-primary fill-primary/70 -translate-y-4" style={{filter: 'drop-shadow(0 4px 6px rgba(0,0,0,0.3))'}} />
+                            </Marker>
+                        )}
+                     </Map>
+                ) : (
+                    <div className="flex items-center justify-center h-full text-muted-foreground">
+                        Cargando mapa...
+                    </div>
+                )}
+            </div>
+             {marker && (
                 <p className="text-sm text-muted-foreground text-center">
-                    Coordenadas seleccionadas: {selectedCoords}
+                    Coordenadas seleccionadas: {marker.latitude.toFixed(4)}, {marker.longitude.toFixed(4)}
                 </p>
             )}
         </div>

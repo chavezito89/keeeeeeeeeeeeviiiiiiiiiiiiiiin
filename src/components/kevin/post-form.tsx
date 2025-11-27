@@ -16,7 +16,7 @@ import imageCompression from 'browser-image-compression';
 
 const LocationPicker = dynamic(() => import('./location-picker').then(mod => mod.LocationPicker), {
   ssr: false,
-  loading: () => <div className="h-64 w-full rounded-md bg-muted flex items-center justify-center"><Loader2 className="h-5 w-5 animate-spin" /></div>
+  loading: () => <div className="h-80 w-full rounded-md bg-muted flex items-center justify-center"><Loader2 className="h-5 w-5 animate-spin" /></div>
 });
 
 
@@ -34,8 +34,11 @@ function SubmitButton() {
     )
 }
 
+interface PostFormProps {
+    mapboxToken?: string;
+}
 
-export function PostForm() {
+export function PostForm({ mapboxToken }: PostFormProps) {
     const { toast } = useToast();
     const [previewImage, setPreviewImage] = useState<string | null>(null);
     const [compressedFile, setCompressedFile] = useState<File | null>(null);
@@ -163,7 +166,7 @@ export function PostForm() {
                         <Textarea id="comment" name="comment" placeholder="¿Qué estás haciendo?" />
                     </div>
 
-                    <LocationPicker />
+                    <LocationPicker mapboxToken={mapboxToken} />
 
                     <input type="hidden" name="latitude" />
                     <input type="hidden" name="longitude" />

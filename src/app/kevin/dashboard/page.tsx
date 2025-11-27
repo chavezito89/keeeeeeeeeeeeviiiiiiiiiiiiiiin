@@ -2,6 +2,8 @@ import { AppHeader } from "@/components/shared/app-header";
 import { PostForm } from "@/components/kevin/post-form";
 
 export default function KevinDashboardPage() {
+  const mapboxToken = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN;
+
   return (
     <div className="flex flex-col min-h-screen">
       <AppHeader showNavButtons={true} />
@@ -14,7 +16,7 @@ export default function KevinDashboardPage() {
                 Registra tu última aventura. El mundo te observa.
             </p>
             <div className="max-w-2xl mx-auto">
-                <PostForm />
+                <PostForm mapboxToken={mapboxToken} />
             </div>
         </div>
       </main>
