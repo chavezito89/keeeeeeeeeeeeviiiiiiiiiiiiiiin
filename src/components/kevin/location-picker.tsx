@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import Map, { Marker, NavigationControl, MapRef } from 'react-map-gl';
 import { Label } from '@/components/ui/label';
-import { Loader2, MapPin, LocateFixed } from 'lucide-react';
+import { Loader2, MapPin, LocateFixed, Pin } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 
